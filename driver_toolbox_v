@@ -1,0 +1,85 @@
+#!/bin/bash
+
+if [ -z $3 ]
+	then
+	printf "usage: bash driver_toolbox_v gprefix slicesPerVolume startingSlice\n"
+	else
+
+version=3.6
+ToolBox_folder=/home/meyer-lab/ToolBox_v$version
+bin=$ToolBox_folder/bin
+CONFIG=$ToolBox_folder/CONFIG_LIGHTSHEET_VOLUME_LOWTH
+denscl=$bin/DensCL_vol
+classify=$bin/classify_auto
+gprefix=$1
+num_slices=$2
+begin=$3
+subset=$4
+#niftifolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/$gprefix/nii/
+niftifolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/$gprefix/im/
+resultsfolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/$gprefix/results_toolbox$subset
+if [ ! -d $resultsfolder ]; then mkdir $resultsfolder; fi
+timelogfolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/
+
+epochfile=$timelogfolder/$gprefix"_time.log"
+#bash epoch_names $epochfile
+nEP=`cat $epochfile | wc -l`
+nEP=`echo $nEP/2 | bc`
+echo $nEP
+tcl=$bin/TCLsimple
+baselinesize=20
+mwsize=5
+cosi=$bin/cosi
+tshift=90
+freq=4
+mkout=$bin/mkout
+mkout_raw=$bin/mkout_raw
+echo $num_slices
+
+for i in $(seq $begin $num_slices); 
+do
+	nii=$niftifolder"im_slice_"$i"/rim_slice_"$i.nii
+	prefix=$gprefix"_rslice"$i
+#	echo $prefix
+	#----------------------
+	# CLEANING 
+#	echo $tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+#	$tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+
+	# -------------------------
+	# SEGMENTATION
+#	echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+#	$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+
+	# -------------------------
+	# MAKE OUTPUT
+#	echo $mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+#	$mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+	
+#	echo $mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+#	$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+	# -----------------------
+	# COLLAPSE WD EPOCHS
+#	echo Rscript "remove_epochs_vol.R" $prefix $resultsfolder $epochfile
+#	Rscript remove_epochs_vol.R $prefix $resultsfolder $epochfile
+	collapsedepochfile=$resultsfolder/$prefix"_epochsC.dat"
+	nEP=`cat $collapsedepochfile | wc -l`
+	cat $collapsedepochfile  
+	echo "Number of epochs =" $nEP
+	
+	#---------------------
+	#THRESHOLD
+#	echo Rscript bcl4_script_v.R $prefix $resultsfolder 
+#	Rscript bcl4_script_v.R $prefix $resultsfolder
+
+
+done
+
+#echo Rscript combine_slices.R $resultsfolder $gprefix $begin $num_slices
+#Rscript combine_slices.R $resultsfolder $gprefix $begin $num_slices
+
+echo $denscl $resultsfolder/$gprefix"_combined_output_rowMeanCT.dat" $resultsfolder/$gprefix"_summary.dat" $resultsfolder/$gprefix"_KNNrecords.dat" $nEP 3 -2 -100 $resultsfolder/$gprefix"_thresholds.dat"
+
+$denscl $resultsfolder/$gprefix"_combined_output_rowMeanCT.dat" $resultsfolder/$gprefix"_summary.dat" $resultsfolder/$gprefix"_KNNrecords.dat" $nEP 3 -2 -100 $resultsfolder/$gprefix"_thresholds.dat"
+
+fi

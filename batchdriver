@@ -1,0 +1,8 @@
+#!/bin/bash
+
+folderlist=$1
+
+while read folder;
+  do
+	  bash driver_toolbox $folder
+done < $folderlist

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+prefix_list=$1
+version=3.6
+ToolBox_folder=/home/meyer-lab/ToolBox_v$version
+bin=$ToolBox_folder/bin
+denscl=$bin/DensCLxC
+prefix="pulled"
+folder_pulled=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_volumes/
+if [ ! -d $folder_pulled ]; then mkdir $folder_pulled; fi
+
+nEP=16
+
+Rscript pull_clusters_volumes.R $ToolBox_folder/scripts/$prefix_list $folder_pulled
+$denscl $folder_pulled/"all_centers.dat" $folder_pulled/"all_centers_sd.dat" $folder_pulled/$prefix"_summary.dat" $folder_pulled/$prefix"_KNNrecords.dat" $nEP 5 0 $folder_pulled/$prefix"_thresholds.dat" 
+
