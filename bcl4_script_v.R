@@ -156,7 +156,7 @@ EpochCorr<-function(prefix,resultsfolder){
 	}
 	outputC<-read.table(paste(resultsfolder,"/",prefix,"_outputC.dat",sep=""));
 	outputRC<-read.table(paste(resultsfolder,"/",prefix,"_output_rawC.dat",sep=""));
-	
+	print(ncol(outputC))	
 #	thresh<-as.numeric(thresh)
 #	print(thresh)
 

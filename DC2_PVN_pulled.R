@@ -2,13 +2,16 @@
 
 #prefix<- args[1]
 
+#CHANGED 1 removed min density threshold for halo removal
+
 require(plotrix)
 require(mmand)
 martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 prefix_list<-read.table("/home/meyer-lab/ToolBox_v3.6/scripts/prefix_list_bars_dots")$V1	                #CHANGE HERE
-folder="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_bars_dots" 	#ALSO CHANGE HERE
+folder="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_bars_dots_sizes" 	#ALSO CHANGE HERE
 niftifolder="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/"
-epfile=paste(folder,"/pulled_epochsC.dat",sep="");							
+epfile=paste(folder,"/pulled_epochsC.dat",sep="");														
+results_toolbox<-"results_toolbox_sizes"																			#CHANGE HERE
 #how many nearest neighbours need to be in same cluster for cell not to be removed as a halo
 KNN=3
 EP<-read.table(epfile);
@@ -23,6 +26,7 @@ dencl<-read.table(paste(folder,"/pulled_summary.dat",sep=""));
 KNNR<-read.table(paste(folder,"/pulled_KNNrecords.dat",sep=""));
 
 inc_list<-vector("list",length(prefix_list));
+noisethresh_list<-vector("list",length(prefix_list));
 dimvec_list<-vector("list",length(prefix_list))
 center_list<-vector("list",length(prefix_list));
 center_all_list<-vector("list",length(prefix_list));
@@ -34,17 +38,18 @@ corvecPreB_list<-vector("list",length(prefix_list));
 for(i in 1:length(prefix_list)){
 	prefix=prefix_list[i]
 	nifti=paste(niftifolder,"/",prefix,"/im/im_slice_1/rim_slice_1.nii",sep="");
-
-	dencl_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_summary.dat",sep=""))
+	
+	dencl_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_summary.dat",sep=""))
 	dencl_list[[i]]<-dencl_list[[i]][order(dencl_list[[i]]$V1),];
-	inc_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_inc.dat",sep=""));
-	center_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_cell_centers.dat",sep=""))[dencl_list[[i]]$V1+1,][inc_list[[i]][,1],];
-	center_all_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_cell_centers.dat",sep=""))
+	inc_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_inc.dat",sep=""));
+	noisethresh_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_noise_thresh.dat",sep=""))
+	center_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_cell_centers.dat",sep=""))[noisethresh_list[[i]]$V1,][dencl_list[[i]]$V1+1,][inc_list[[i]][,1],];
+	center_all_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_cell_centers.dat",sep=""))
 	dencl_list[[i]]<-dencl_list[[i]][inc_list[[i]][,1],];
 	dimvec_list[[i]]<-system(paste("nifti_tool -disp_hdr -infiles",nifti,"| grep \" dim \" | awk '{print $5, $6,$7}'"),intern=T)
 	dimvec_list[[i]]<-as.numeric(strsplit(dimvec_list[[i]]," ")[[1]])
-	avtab_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_mip.dat",sep=""))
-	corvec_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_corvec.dat",sep=""))
+	avtab_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_mip.dat",sep=""))
+	corvec_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_corvec.dat",sep=""))
 #	corvecPreB_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/results_toolbox/",prefix,"_corvecPreB.dat",sep=""))
 
 }
@@ -73,12 +78,13 @@ for(i in 1:max(cl)) {
 		listminprob[i]=0;
 	}
 }
-#threshold<-(hl & dencl$V3>listminprob[cl])     #HALO THRESHOLD CHANGE!!!!!
+#threshold<-(hl & dencl$V3>listminprob[cl])     #CHANGED 1
 threshold<-hl
 hc <- sub('FF$','77',heat.colors(nEP))
 write.table(file=paste(folder,"/pulled_inc.dat",sep=""),threshold)
 
-ord<-order(EPlist)
+ord<-order(as.numeric(gsub("\\D","",EPlist)))
+#ord<-order(EPlist)
 
 sizes<-rep(0,max(cl));
 sizes[as.numeric(names(table(cl[threshold])))]=as.numeric(table(cl[threshold]));
@@ -119,6 +125,14 @@ plot_traj<-function(X,min=0,max=1,NS=1,AS=1,CC="gray"){
 #	pos<-barplot(centers[X,ord2],names.arg=EPlist[ord2],horiz=T,xlim=c(-1,centers[X,ord2[nEP]]+centers_sd[X,ord2[nEP]]),cex.axis=AS,cex.names=NS,col=CC);
 	arrows(y0=pos,y1=pos,x0=centers[X,ord2]-centers_sd[X,ord2],x1=centers[X,ord2]+centers_sd[X,ord2],code=3,length=0,col="black");
 
+}
+
+plot_box<-function(X){
+	par(mar=c(3,10,2,2))
+#	ord2<-order(centers[X,]);
+#	boxplot(data[cl==X & threshold,2+ord2],names=EPlist[ord2],las=2,horizontal=T,main=paste("cluster",X,":" ,sizes[X],"cells"))
+	boxplot(data[cl==X & threshold,2+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,":" ,sizes[X],"cells"))
+#	abline(v=0, lty=2,col="blue")
 }
 
 plot_dp <- function(){

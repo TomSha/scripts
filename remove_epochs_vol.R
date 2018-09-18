@@ -8,7 +8,7 @@ require(mmand)
 
 output=read.table(paste(resultsfolder,"/",prefix,"_output.dat",sep=""));
 epochs=read.table(args[3])$V2;
-timelog=read.table(args[3])$V1+97; #CHANGED HERE 6/7/18 for 180614_PVN_barrage4_v10_F1_1
+timelog=read.table(args[3])$V1+90; #CHANGED HERE 6/7/18 for 180614_PVN_barrage4_v10_F1_1
 
 #---------remove epochs from raw output---------------
 outputR=read.table(paste(resultsfolder,"/",prefix,"_output_raw.dat",sep=""));
@@ -41,7 +41,6 @@ write.table(outputRC, outputfolderRC, row.names = F, col.names = F);
 #--------------Generate vector of names of epochs----------------------
 epochsC<- grep((stim), epochs, value = T,invert=T);
 write.table(epochsC, epochfolderC, row.names = F, col.names = F);
-
 #---calculate epoch frame number---
 timelogM=matrix(floor(timelog*20),ncol=2,byrow=T);
 EPtime=timelogM[,2]-timelogM[,1];

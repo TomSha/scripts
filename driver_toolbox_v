@@ -2,7 +2,7 @@
 
 if [ -z $3 ]
 	then
-	printf "usage: bash driver_toolbox_v gprefix slicesPerVolume startingSlice\n"
+	printf "usage: bash driver_toolbox_v gprefix slicesPerVolume startingSlice results_toolbox_subset(optional - default = results_toolbox)\n"
 	else
 
 version=3.6
@@ -40,28 +40,28 @@ for i in $(seq $begin $num_slices);
 do
 	nii=$niftifolder"im_slice_"$i"/rim_slice_"$i.nii
 	prefix=$gprefix"_rslice"$i
-#	echo $prefix
+	echo $prefix
 	#----------------------
 	# CLEANING 
-#	echo $tcl $nii $resultsfolder $prefix $baselinesize $mwsize
-#	$tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+	echo $tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+	$tcl $nii $resultsfolder $prefix $baselinesize $mwsize
 
 	# -------------------------
 	# SEGMENTATION
-#	echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
-#	$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+	echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+	$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
 
 	# -------------------------
 	# MAKE OUTPUT
-#	echo $mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
-#	$mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+	echo $mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+	$mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
 	
-#	echo $mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
-#	$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+	echo $mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+	$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
 	# -----------------------
 	# COLLAPSE WD EPOCHS
-#	echo Rscript "remove_epochs_vol.R" $prefix $resultsfolder $epochfile
-#	Rscript remove_epochs_vol.R $prefix $resultsfolder $epochfile
+	echo Rscript "remove_epochs_vol.R" $prefix $resultsfolder $epochfile
+	Rscript remove_epochs_vol.R $prefix $resultsfolder $epochfile
 	collapsedepochfile=$resultsfolder/$prefix"_epochsC.dat"
 	nEP=`cat $collapsedepochfile | wc -l`
 	cat $collapsedepochfile  
@@ -69,17 +69,17 @@ do
 	
 	#---------------------
 	#THRESHOLD
-#	echo Rscript bcl4_script_v.R $prefix $resultsfolder 
-#	Rscript bcl4_script_v.R $prefix $resultsfolder
+	echo Rscript bcl4_script_v.R $prefix $resultsfolder 
+	Rscript bcl4_script_v.R $prefix $resultsfolder
 
 
 done
 
-#echo Rscript combine_slices.R $resultsfolder $gprefix $begin $num_slices
-#Rscript combine_slices.R $resultsfolder $gprefix $begin $num_slices
+echo Rscript combine_slices.R $resultsfolder $gprefix $begin $num_slices
+Rscript combine_slices.R $resultsfolder $gprefix $begin $num_slices
 
-echo $denscl $resultsfolder/$gprefix"_combined_output_rowMeanCT.dat" $resultsfolder/$gprefix"_summary.dat" $resultsfolder/$gprefix"_KNNrecords.dat" $nEP 3 -2 -100 $resultsfolder/$gprefix"_thresholds.dat"
+#echo $denscl $resultsfolder/$gprefix"_combined_outputCT.dat" $resultsfolder/$gprefix"_summary.dat" $resultsfolder/$gprefix"_KNNrecords.dat" $nEP 3 -2 -100 $resultsfolder/$gprefix"_thresholds.dat"
 
-$denscl $resultsfolder/$gprefix"_combined_output_rowMeanCT.dat" $resultsfolder/$gprefix"_summary.dat" $resultsfolder/$gprefix"_KNNrecords.dat" $nEP 3 -2 -100 $resultsfolder/$gprefix"_thresholds.dat"
+#$denscl $resultsfolder/$gprefix"_combined_outputCT.dat" $resultsfolder/$gprefix"_summary.dat" $resultsfolder/$gprefix"_KNNrecords.dat" $nEP 3 -2 -100 $resultsfolder/$gprefix"_thresholds.dat"
 
 fi

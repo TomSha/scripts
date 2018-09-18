@@ -19,7 +19,6 @@ epochfile=$timelogfolder/$prefix"_time.log"
 nEP=`cat $epochfile | wc -l`
 nEP=`echo $nEP/2 | bc`
 echo $nEP
-
 # ----------------------
 # CLEANING 
 
@@ -64,9 +63,9 @@ echo "Number of epochs =" $nEP
 #thresh was 0.625 for dots and 0.44 for simple
 
 echo Rscript bcl4_script.R $prefix $resultsfolder 					
-Rscript bcl4_script.R $prefix $resultsfolder 						
+#Rscript bcl4_script.R $prefix $resultsfolder 						
 
 #----------------------
 #CLUSTERING
 
-#$denscl $resultsfolder/$prefix"_output_rowMeanCT.dat" $resultsfolder/$prefix"_summary.dat" $resultsfolder/$prefix"_KNNrecords.dat" $nEP 3 -1 $resultsfolder/$prefix"_thresholds.dat" 
+$denscl $resultsfolder/$prefix"_output_dot_270CTM.dat" $resultsfolder/$prefix"_dot_270_summary.dat" $resultsfolder/$prefix"_dot_270_KNNrecords.dat" $nEP 0.5 -4 $resultsfolder/$prefix"_dot_270_thresholds.dat"

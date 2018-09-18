@@ -1,0 +1,47 @@
+#!/bin/bash
+
+version=3.6
+ToolBox_folder=/home/meyer-lab/ToolBox_v$version
+bin=$ToolBox_folder/bin
+CONFIG=$ToolBox_folder/CONFIG_LIGHTSHEET_2
+classify=$bin/classify_auto
+prefix=$1
+niftifolder=~/Desktop/2018-08-23-DotSpeed3Deg-BG-black_F1T3/IMG/IMG_slice_1/
+resultsfolder=$niftifolder/results						#CHANGE HERE
+if [ ! -d $resultsfolder ]; then mkdir $resultsfolder; fi
+timelogfolder=~/Desktop/2018-08-23-Imaging_SpeedDot_F1_TimeRecords
+
+nii=$niftifolder/rIMG_slice_1.nii
+epochfile=$timelogfolder/$prefix"_time.log"
+nEP=`cat $epochfile | wc -l`
+nEP=`echo $nEP/2 | bc`
+echo $nEP
+# ----------------------
+# CLEANING 
+
+tcl=$bin/TCLsimple
+baselinesize=20
+mwsize=5
+
+$tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+
+# -------------------------
+# SEGMENTATION
+
+cosi=$bin/cosi
+echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+
+# -------------------------
+# make output
+
+tshift=90 #CHECK THIS
+freq=20
+
+
+mkout=$bin/mkout
+#$mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+
+mkout_raw=$bin/mkout_raw
+$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+

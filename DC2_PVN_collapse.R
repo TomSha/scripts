@@ -5,10 +5,11 @@
 require(plotrix)
 require(mmand)
 
-prefix="170203_PVN_barrage_7dpf_F1_1"
-folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox/",sep="")
+prefix="180606_PVN_barrage4_F1_1"
+folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox_sizes/",sep="")#CHANGES 17/08/2018
 #epfilenoC="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/170623_PVN_barrage_7dpf_F2_1_time.log";
-epfile=paste(folder,prefix,"_epochsC.dat",sep="");
+#epfile=paste(folder,prefix,"_epochsC.dat",sep="");
+epfile=paste(folder,prefix,"_epochs_dot_270.dat",sep="");
 nifti=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/rim_slice_1.nii",sep="");
 
 #how many nearest neighbours need to be in same cluster for cell not to be removed as a halo
@@ -22,13 +23,13 @@ EPlist<-vector(mode="character", length=nEP);
 #EPlist<-as.character(EP[seq(1,nrow(EP),2),2])
 EPlist<-EP$V1
 
-data0=read.table(paste(folder,prefix,"_output_rawCT.dat",sep=""));
-#data0=read.table(paste(folder,prefix,"_output_rowMeanCT.dat",sep="")); #CHANGED HERE!!!!!!!!!!!!!!!
+data0=read.table(paste(folder,prefix,"_output_dot_270CTM.dat",sep=""));
 #data0=read.table(paste(folder,prefix,"_output.dat",sep=""));
-dencl<-read.table(paste(folder,prefix,"_summary.dat",sep=""));
-KNNR0<-read.table(paste(folder,prefix,"_KNNrecords.dat",sep=""))[,1:(KNN+1)];
-thsum<-as.numeric(read.table(paste(folder,prefix,"_thresholds.dat",sep="")));
-cenfile<-read.table(paste(folder,prefix,"_cell_centers.dat",sep=""));
+noisethresh<-read.table(paste(folder,prefix,"_noise_thresh.dat",sep=""))$V1;
+dencl<-read.table(paste(folder,prefix,"_dot_270_summary.dat",sep=""));
+KNNR0<-read.table(paste(folder,prefix,"_dot_270_KNNrecords.dat",sep=""))[,1:(KNN+1)];
+thsum<-as.numeric(read.table(paste(folder,prefix,"_dot_270_thresholds.dat",sep="")));
+cenfile<-read.table(paste(folder,prefix,"_cell_centers.dat",sep=""))[noisethresh,];
 #nii_cleaned<-paste(base_folder,"/",folder,"/",prefix,"_cleaned.nii",sep="")
 nii_cleaned<-paste(folder,prefix,"_cleaned.nii",sep="")
 
@@ -124,7 +125,7 @@ plot_traj<-function(X,min=0,max=1,NS=1,AS=1){
 }
 
 plot_dp <- function(){
-	plot(log(dencl$V4)[threshold],log(dencl$V3)[threshold],col=colors[ordcl[cl[threshold]]]);
+	plot(log(dencl$V4)[threshold],log(dencl$V3)[threshold],col=colors[ordcl[cl[threshold]]],pch=19);
 	lines(rep(thsum[1],100),seq(-10,10,length=100),lty=2,col="green")
 	lines(seq(-10,10,length=100),-nEP*seq(-10,10,length=100)+thsum[2],lty=2,col="green")
 }

@@ -32,3 +32,5 @@ write.table(combined_data_raw,file=paste(folder,"/",gprefix,"_combined_output_ra
 write.table(combined_cell_centers,file=paste(folder,"/",gprefix,"_cell_centers.dat",sep=""),row.names=F,col.names=F)
 write.table(combined_noise_thresh,file=paste(folder,"/",gprefix,"_noise_thresh.dat",sep=""),row.names=F,col.names=F)
 
+print(paste("num epochs in slice",ncol(data_list[[i]])))
+print(paste("num epochs in combined",ncol(combined_data)))

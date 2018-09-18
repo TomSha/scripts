@@ -2,7 +2,7 @@ require(plotrix)
 require(mmand)
 martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 
-pulledresultsfolder=(paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_bars_dots/",sep=""));#CHANGE HERE
+pulledresultsfolder=(paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results/",sep=""));#CHANGE HERE
 pulledoutput=read.table(paste(pulledresultsfolder,"/","all_centers.dat",sep=""));
 pulledinc=read.table(paste(pulledresultsfolder,"/","pulled_inc.dat",sep=""))
 pulleddencl=read.table(paste(pulledresultsfolder,"/","pulled_summary.dat",sep=""))
@@ -10,7 +10,7 @@ pulleddencl_sort=pulleddencl[order(pulleddencl$V1),];
 #pulleddencl_inc=pulleddencl[pulledinc[,1],];
 pulledoutput_inc=pulledoutput[pulledinc[,1],];
 toolbox=paste("/home/meyer-lab/ToolBox_v3.6/")
-prefix_list=read.table(paste(toolbox,"/scripts/prefix_list_bars_dots",sep=""))$V1 #CHANGE HERE
+prefix_list=read.table(paste(toolbox,"/scripts/prefix_list_rep1",sep=""))$V1 #CHANGE HERE
 
 inc<-vector("list",length(prefix_list));
 output<-vector("list",length(prefix_list));

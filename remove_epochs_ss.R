@@ -25,7 +25,7 @@ temp <- paste(resultsfolder,"/",prefix,"_temp.dat",sep="");
 
 
 #---------------------------remove epoch responses------------------------------
-stim<-"WIGGLY|CONCENTRIC|LOOM"
+stim<-"CONCENTRIC"
 epochsI<- grep((stim), epochs, value = F,invert=T);
 outputC<-output[,c(1,epochsI+1)];
 #cmean <- colMeans(outputC[,2:ncol(outputC)]);

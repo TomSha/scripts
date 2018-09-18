@@ -2,9 +2,10 @@
 
 folderlist=$1
 slices=$2
-#$3 nothing, _wd or _grat
+startslice=$3
+#$4 nothing, _wd or _grat
 
 while read folder;
   do
-	  bash driver_toolbox_v $folder $slices $3
+	  bash driver_toolbox_v $folder $slices $startslice $4
 done < $folderlist
