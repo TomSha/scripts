@@ -5,7 +5,7 @@
 require(plotrix)
 require(mmand)
 
-prefix="180606_PVN_barrage4_F1_1"
+prefix="180608_PVN_barrage4_F1_1"
 folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox_sizes/",sep="")#CHANGES 17/08/2018
 #epfilenoC="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/170623_PVN_barrage_7dpf_F2_1_time.log";
 #epfile=paste(folder,prefix,"_epochsC.dat",sep="");

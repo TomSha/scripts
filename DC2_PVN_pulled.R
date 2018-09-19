@@ -39,7 +39,7 @@ for(i in 1:length(prefix_list)){
 	prefix=prefix_list[i]
 	nifti=paste(niftifolder,"/",prefix,"/im/im_slice_1/rim_slice_1.nii",sep="");
 	
-	dencl_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_summary.dat",sep=""))
+	dencl_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_dot_270_summary.dat",sep=""))#CHANGED HERE!!!!!
 	dencl_list[[i]]<-dencl_list[[i]][order(dencl_list[[i]]$V1),];
 	inc_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_inc.dat",sep=""));
 	noisethresh_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_noise_thresh.dat",sep=""))
@@ -128,18 +128,18 @@ plot_traj<-function(X,min=0,max=1,NS=1,AS=1,CC="gray"){
 }
 
 plot_box<-function(X){
-	par(mar=c(3,10,2,2))
+	par(mar=c(3,7,2,2))
 #	ord2<-order(centers[X,]);
-#	boxplot(data[cl==X & threshold,2+ord2],names=EPlist[ord2],las=2,horizontal=T,main=paste("cluster",X,":" ,sizes[X],"cells"))
-	boxplot(data[cl==X & threshold,2+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,":" ,sizes[X],"cells"))
+	fish<-sum(!table(data$V2[cl==X & threshold])==0)
+	boxplot(data[cl==X & threshold,4+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,"in",fish,"/",length(prefix_list),"fish"))
 #	abline(v=0, lty=2,col="blue")
 }
 
 plot_dp <- function(){
-	plot(log(dencl$V4)[threshold],log(dencl$V3)[threshold],col=colors[ordcl[cl[threshold]]],pch=19);
+	plot(log(dencl$V4)[threshold],log(dencl$V3)[threshold],col=colors[ordcl[cl[threshold]]],pch=19,cex=0.6,xlab="log(distance)",ylab="log(density)");
 	logdist<-seq(min(log(dencl$V4)),range(dencl$V4,finite=T)[2],length.out=100);
 	logprob<-seq(min(log(dencl$V3)),max(log(dencl$V3)),length.out=100);
-	lines(rep(thsum[1],100),logprob,lty=2,col="green")
+#	lines(rep(thsum[1],100),logprob,lty=2,col="green")
     lines(logdist,-nEP*logdist+thsum[2],lty=2,col="green")
 }
 
@@ -152,6 +152,17 @@ plot_dp_free <- function(c){
 	lines(rep(thsum[1],100),logprob,lty=2,col="green")
 	lines(logdist,-nEP*logdist+thsum[2],lty=2,col="green")
 }
+
+plot_dp_cluster <- function(c){
+	logdist<-seq(min(log(dencl$V4)),range(dencl$V4,finite=T)[2],length.out=100);
+	logprob<-seq(min(log(dencl$V3)),max(log(dencl$V3)),length.out=100);
+	colors<-rep("black",nrow(dencl));
+	colors[cl[threshold]==c]="red";
+	plot(log(dencl$V4)[threshold],log(dencl$V3)[threshold],col=colors,pch=19,cex=1,xlab="log(distance)",ylab="log(density)",cex.lab=1.5);
+	lines(rep(thsum[1],100),logprob,lty=2,col="green")
+	lines(logdist,-nEP*logdist+thsum[2],lty=2,col="green")
+}
+
 
 plot_corvec<-function(P=19,S=1.5,DR=50){
 	lmat=matrix(1:8,ncol=2)
@@ -171,58 +182,50 @@ plot_corvec<-function(P=19,S=1.5,DR=50){
 
 
 plot_cluster<-function(X,P=19,S=1.5,nothresh=F,traj_device=NA){
-#	lmat=matrix(1:36,ncol=6);
-	lmat=matrix(1:8,ncol=2);
-#	lmat[5,6]=lmat[6,6]=35
-	layout(lmat)
-	par(mar=c(.5,.5,.5,.5))
-	colors=rainbow(max(cl));
-	for(k in 1:length(prefix_list)){
-	    y=center_list[[k]]$V1+1
-		x=center_list[[k]]$V2+1
-		nx=dimvec_list[[k]][1]
-		ny=dimvec_list[[k]][2]
-		image(1:nx,1:ny,matrix(avtab_list[[k]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE)		  ;
-	#	title(main=paste("cluster ",X,sep=""));	
-		if(nothresh){
-			for(i in 1:length(X)){
-				selec=dencl_list[[k]]$V6 %in% (data$V4[data$V2==prefix_list[k] & cl==X[i]]-1)
-				points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
-			}
-		} else {
-			for(i in 1:length(X)){
-#dencl_list[[k]]$V6 -> C1 ID 
-#data$V4[data$V2==prefix_list[k] & cl==X -> C1 from experiment k & is in C2==X
+#dencl_list[[k]]$V6 : C1 ID from fish k
+#data$V4			: C1 ID
+#data$V2			: prefix
 
-				selec=dencl_list[[k]]$V6 %in% (data$V4[data$V2==prefix_list[k] & cl==X[i] & threshold]-1)
-				points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
+	if(nothresh){
+	for(i in 1:length(X)){
+		lmat=matrix(c(1,1,3,1,1,4,2,2,5,2,2,6),ncol=3,byrow=T);
+		layout(lmat)
+		colors=rainbow(max(cl));
+		plot_box(X[i])
+		plot_dp_cluster(X[i]);	
+		par(mar=c(0.5,0.5,0.5,0.5))
+		for(k in 1:length(prefix_list)){
+	    	y=center_list[[k]]$V1+1
+			x=center_list[[k]]$V2+1
+			nx=dimvec_list[[k]][1]
+			ny=dimvec_list[[k]][2]
+			image(1:nx,1:ny,matrix(avtab_list[[k]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE)		  ;
+			selec=dencl_list[[k]]$V6 %in% (data$V4[data$V2==prefix_list[k] & cl==X[i]]-1)
+			points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
+			}
+		}
+		}else{
+	for(i in 1:length(X)){
+	lmat=matrix(c(1,1,3,1,1,4,2,2,5,2,2,6),ncol=3,byrow=T);
+		layout(lmat)
+		colors=rainbow(max(cl));
+		plot_box(X[i])
+		par(mar=c(5,7,2,2))
+		plot_dp_cluster(X[i]);	
+		par(mar=c(0.5,0.5,0.5,0.5))
+		for(k in 1:length(prefix_list)){
+	    	y=center_list[[k]]$V1+1
+			x=center_list[[k]]$V2+1
+			nx=dimvec_list[[k]][1]
+			ny=dimvec_list[[k]][2]
+			image(1:nx,1:ny,matrix(avtab_list[[k]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE)		  ;
+
+		selec=dencl_list[[k]]$V6 %in% (data$V4[data$V2==prefix_list[k] & cl==X[i] & threshold]-1)
+		points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
+
+				}
 			}
 		}
 	}
-#	if(length(X)==1){
-#		dc=dev.cur();
-#		if(is.na(traj_device)){
-#			X11();
-#			plot_traj(X);
-#			dev.set(dc);
-#		} else {
-#			dev.set(traj_device);
-#			plot_traj(X);
-#			dev.set(dc)
-#		}
-#	}
-}
-
-
-
-
-#b<-"NULL"
-#for (k in 1:29)
-#	{
-#	print(k);
-#	selec=dencl_list[[k]]$V6 %in% (data$V4[data$V2==prefix_list[k] & cl==X & threshold]-1);
-#	print(paste("exp = ",k," cells = ",sum(selec),sep=""))
-#	
-#	}
 
 
