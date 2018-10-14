@@ -156,6 +156,8 @@ EpochCorr<-function(prefix,resultsfolder){
 	}
 	outputC<-read.table(paste(resultsfolder,"/",prefix,"_outputC.dat",sep=""));
 	outputRC<-read.table(paste(resultsfolder,"/",prefix,"_output_rawC.dat",sep=""));
+	outputMC<-read.table(paste(resultsfolder,"/",prefix,"_output_maxC.dat",sep=""));
+
 	print(ncol(outputC))	
 #	thresh<-as.numeric(thresh)
 #	print(thresh)
@@ -194,7 +196,7 @@ EpochCorr<-function(prefix,resultsfolder){
 
 outputCT<-outputC[corvec>thresh,];
 outputRCT<-outputRC[corvec>thresh,];
-
+outputMCT<-outputMC[corvec>thresh,];
 
 	print(paste("outputC" , nrow(outputC), sep=""))
 	print(paste("outputCT ", nrow(outputCT), sep=""))
@@ -202,6 +204,7 @@ outputRCT<-outputRC[corvec>thresh,];
 write.table(corvec,paste(resultsfolder,"/",prefix,"_corvec.dat",sep=""),row.names=F,col.names=F);
 write.table(outputCT,paste(resultsfolder,"/",prefix,"_outputCT.dat",sep=""),row.names=F,col.names=F);
 write.table(outputRCT,paste(resultsfolder,"/",prefix,"_output_rawCT.dat",sep=""),row.names=F,col.names=F);
+write.table(outputMCT,paste(resultsfolder,"/",prefix,"_output_maxCT.dat",sep=""),row.names=F,col.names=F);
 write.table(corvec>thresh,paste(resultsfolder,"/",prefix,"_noise_thresh.dat",sep=""),row.names=F,col.names=F);
 
 }

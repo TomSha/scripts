@@ -34,6 +34,7 @@ tshift=90
 freq=4
 mkout=$bin/mkout
 mkout_raw=$bin/mkout_raw
+mkout_max=$bin/mkout_max
 echo $num_slices
 
 for i in $(seq $begin $num_slices); 
@@ -43,21 +44,26 @@ do
 	echo $prefix
 	#----------------------
 	# CLEANING 
-	echo $tcl $nii $resultsfolder $prefix $baselinesize $mwsize
-	$tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+#	echo $tcl $nii $resultsfolder $prefix $baselinesize $mwsize
+#	$tcl $nii $resultsfolder $prefix $baselinesize $mwsize
 
 	# -------------------------
 	# SEGMENTATION
-	echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
-	$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+#	echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+#	$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
 
 	# -------------------------
 	# MAKE OUTPUT
-	echo $mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
-	$mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+#	echo $mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
+#	$mkout $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output.dat"
 	
-	echo $mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
-	$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+#	echo $mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+#	$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+
+	echo $mkout_max $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_max.dat"
+	$mkout_max $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_max.dat"
+
+
 	# -----------------------
 	# COLLAPSE WD EPOCHS
 	echo Rscript "remove_epochs_vol.R" $prefix $resultsfolder $epochfile

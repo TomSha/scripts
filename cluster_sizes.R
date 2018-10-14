@@ -31,10 +31,42 @@ epochs_dot_270_list<-lapply(epochs_list,grep,pattern="DOT_270",value=T)
 for (i in 1:length(prefix_list)){
 	prefix<-prefix_list[i]
 	folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox/",sep="");
+	folder90=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox_sizes_90/",sep="");
+	folder270=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox_sizes_270/",sep="");
 
-	write.table(x=output_dot_90_list[[i]],file=paste(folder,prefix,"_output_dot_90CTM.dat",sep=""),row.names=F,col.names=F)
-	write.table(x=output_dot_270_list[[i]],file=paste(folder,prefix,"_output_dot_270CTM.dat",sep=""),row.names=F,col.names=F)
-	write.table(x=epochs_dot_90_list[[i]],file=paste(folder,prefix,"_epochs_dot_90.dat",sep=""),row.names=F,col.names=F)
-	write.table(x=epochs_dot_270_list[[i]],file=paste(folder,prefix,"_epochs_dot_270.dat",sep=""),row.names=F,col.names=F)
+	if (!dir.exists(folder90)) dir.create(folder90)
+	if (!dir.exists(folder270)) dir.create(folder270)
+	
+	file.copy(paste(folder,prefix,".bin",sep=""),paste(folder90,prefix,".bin",sep=""))
+	file.copy(paste(folder,prefix,".bin",sep=""),paste(folder270,prefix,".bin",sep=""))
+	print(paste("copied binary",prefix))
+	file.copy(paste(folder,prefix,"_cell_centers.dat",sep=""),paste(folder90,prefix,"_cell_centers.dat",sep=""))
+	file.copy(paste(folder,prefix,"_cell_centers.dat",sep=""),paste(folder270,prefix,"_cell_centers.dat",sep=""))
+
+	file.copy(paste(folder,prefix,"_cleaned.nii",sep=""),paste(folder90,prefix,"_cleaned.nii",sep=""))
+	file.copy(paste(folder,prefix,"_cleaned.nii",sep=""),paste(folder270,prefix,"_cleaned.nii",sep=""))
+
+	file.copy(paste(folder,prefix,"_noise_thresh.dat",sep=""),paste(folder90,prefix,"_noise_thresh.dat",sep=""))
+	file.copy(paste(folder,prefix,"_noise_thresh.dat",sep=""),paste(folder270,prefix,"_noise_thresh.dat",sep=""))
+
+	file.copy(paste(folder,prefix,"_mip.dat",sep=""),paste(folder90,prefix,"_mip.dat",sep=""))
+	file.copy(paste(folder,prefix,"_mip.dat",sep=""),paste(folder270,prefix,"_mip.dat",sep=""))
+
+	file.copy(paste(folder,prefix,"_corvec.dat",sep=""),paste(folder90,prefix,"_corvec.dat",sep=""))
+	file.copy(paste(folder,prefix,"_corvec.dat",sep=""),paste(folder270,prefix,"_corvec.dat",sep=""))
+
+	file.copy(paste(folder,prefix,"_output_rawCT.dat",sep=""),paste(folder90,prefix,"_output_rawCT.dat",sep=""))
+	file.copy(paste(folder,prefix,"_output_rawCT.dat",sep=""),paste(folder270,prefix,"_output_rawCT.dat",sep=""))
+
+	write.table(x=output_dot_90_list[[i]],file=paste(folder90,prefix,"_outputCTM.dat",sep=""),row.names=F,col.names=F)
+	write.table(x=epochs_dot_90_list[[i]],file=paste(folder90,prefix,"_epochsC.dat",sep=""),row.names=F,col.names=F)
+	
+	write.table(x=output_dot_270_list[[i]],file=paste(folder270,prefix,"_outputCTM.dat",sep=""),row.names=F,col.names=F)
+	write.table(x=epochs_dot_270_list[[i]],file=paste(folder270,prefix,"_epochsC.dat",sep=""),row.names=F,col.names=F)
+
+	print(paste("finished",prefix))
 }
+
+
+
 

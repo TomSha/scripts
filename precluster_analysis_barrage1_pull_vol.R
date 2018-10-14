@@ -1,10 +1,12 @@
-martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+#martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 
 prefix_list=read.table("prefix_list_vol")$V1
 
 
 folder_list<-vector("list",length(prefix_list))
 outputRCT_list<-vector("list",length(prefix_list))
+outputMCT_list<-vector("list",length(prefix_list))
 noisethresh_list<-vector("list",length(prefix_list))
 cenfile_list<-vector("list",length(prefix_list))
 ep_list<-vector("list",length(prefix_list))
@@ -18,6 +20,7 @@ epfile=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs
 
 folder_list[[i]]<-paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/results_toolbox/",sep="");
 outputRCT_list[[i]]<-read.table(paste(folder,prefix,"_combined_output_rawCT.dat",sep=""));
+outputMCT_list[[i]]<-read.table(paste(folder,prefix,"_combined_output_maxCT.dat",sep=""));
 noisethresh_list[[i]]<-read.table(paste(folder,prefix,"_noise_thresh.dat",sep=""));
 cenfile_list[[i]]<-read.table(paste(folder,prefix,"_cell_centers.dat",sep=""))[noisethresh_list[[i]][,1],];
 EPlength_list[[i]]<-read.table(paste(folder,prefix,"_rslice10_EPtimeC.dat",sep=""))$V1
@@ -27,10 +30,12 @@ epochsC<-ep_list[[i]][,2][2:(nrow(ep_list[[i]])/2)*2];
 ord<-order(epochsC)
 epochsC<-epochsC[ord]
 outputRCT_list[[i]][,3:ncol(outputRCT_list[[i]])]<-outputRCT_list[[i]][,3:ncol(outputRCT_list[[i]])][,ord]
+outputMCT_list[[i]][,3:ncol(outputMCT_list[[i]])]<-outputMCT_list[[i]][,3:ncol(outputMCT_list[[i]])][,ord]
 EPlength_list[[i]]<-EPlength_list[[i]][ord]
 }
 
 outputRCT<-do.call(rbind,outputRCT_list)
+outputMCT<-do.call(rbind,outputMCT_list)
 outputRCT[,3:ncol(outputRCT)]<-outputRCT[,3:ncol(outputRCT)]/rowMeans(outputRCT[,3:ncol(outputRCT)])
 
 #minus 1 because we need to exclude the concentric
@@ -50,10 +55,17 @@ outputRCT_GM<-outputRCT[,c(1,2,index_GM+2)]
 outputRCT_LMD<-outputRCT[,c(1,2,index_LMD+2)]
 outputRCT_LML<-outputRCT[,c(1,2,index_LML+2)]
 
+outputMCT_GM<-outputMCT[,c(1,2,index_GM+2)]
+outputMCT_LMD<-outputMCT[,c(1,2,index_LMD+2)]
+outputMCT_LML<-outputMCT[,c(1,2,index_LML+2)]
+
 #calculate selectivity indicies for global vs local motion
 #NB we may need to normalise the global motion to eg the number of cycles of the grating....
 dark_local_selec<-(outputRCT_LMD[,3:ncol(outputRCT_LMD)]-outputRCT_GM[,3:ncol(outputRCT_GM)])/(outputRCT_LMD[,3:ncol(outputRCT_LMD)]+outputRCT_GM[,3:ncol(outputRCT_GM)])
 light_local_selec<-(outputRCT_LML[,3:ncol(outputRCT_LML)]-outputRCT_GM[,3:ncol(outputRCT_GM)])/(outputRCT_LML[,3:ncol(outputRCT_LML)]+outputRCT_GM[,3:ncol(outputRCT_GM)])
+dark_max<-(outputMCT_LMD[,3:ncol(outputMCT_LMD)]-outputMCT_GM[,3:ncol(outputMCT_GM)])/(outputMCT_LMD[,3:ncol(outputMCT_LMD)]+outputMCT_GM[,3:ncol(outputMCT_GM)])
+light_max<-(outputMCT_LML[,3:ncol(outputMCT_LML)]-outputMCT_GM[,3:ncol(outputMCT_GM)])/(outputMCT_LML[,3:ncol(outputMCT_LML)]+outputMCT_GM[,3:ncol(outputMCT_GM)])
+
 
 #calculate the coefficient of variation 
 EPMeans<-colMeans(outputRCT[,3:ncol(outputRCT)])
@@ -111,6 +123,31 @@ plot_local_selec<-function(){
 	for(i in 1:ncol(light_local_selec)) hist(light_local_selec[,i],breaks=seq(minval,maxval,l=30),xlab=paste(epochsC_LML[i],"= +1 & ",epochsC_GM[i],"= -1",sep=""),ylim=c(0,800),main="")
 	}
 
+plot_local_selec_max<-function(){
+	param_list<-vector("list",length=ncol(dark_max)+ncol(light_max))
+	selec_list<-vector("list",length=2)
+	par(mfrow=c(2,2),oma=c(4,0,4,0));
+	minval<-min(c(min(dark_max),min(light_max)));
+	maxval<-max(c(max(dark_max),max(light_max)));
+	for(i in 1:ncol(dark_max)) param_list[[i]]<-hist(dark_max[,i],breaks=seq(minval,maxval,l=30),xlab="",ylim=c(0,800),main="",col=martincolorscale[i])
+	mtext("global vs local motion selectivity (dark bar)",outer=T)
+	par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
+	plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
+	legend("bottomleft",inset=c(0.01,0.01),legend=c("0ᵒ","180ᵒ","270ᵒ","90ᵒ"),xpd=TRUE,fill=martincolorscale[1:4],cex=1.3)
+	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = local selective","-1 = global selective"),xpd=TRUE,cex=1.3)
+	
+	X11(); par(mfrow=c(2,2),oma=c(4,0,4,0));
+	for(i in 1:ncol(light_max)) param_list[[i+4]]<-hist(light_max[,i],breaks=seq(minval,maxval,l=30),xlab="",ylim=c(0,800),main="",col=martincolorscale[i])
+	mtext("global vs local motion selectivity (light bar)",outer=T)
+	par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
+	plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
+	legend("bottomleft",inset=c(0.01,0.01),legend=c("0ᵒ","180ᵒ","270ᵒ","90ᵒ"),xpd=TRUE,fill=martincolorscale[1:4],cex=1.3)
+	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = local selective","-1 = global selective"),xpd=TRUE,cex=1.3)
+	
+	selec_list[[1]]<-sapply(param_list, function(x) sum(x$counts[x$mid>=0.5]))
+	selec_list[[2]]<-sapply(param_list, function(x) sum(x$counts[x$mid<=-0.5]))
+	return(selec_list)
+	}
 
 #3 plots scatter plot of global motion vs local motion
 plot_scatter<-function(){

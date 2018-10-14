@@ -23,12 +23,12 @@ EPlist<-vector(mode="character", length=nEP);
 #EPlist<-as.character(EP[seq(1,nrow(EP),2),2])
 EPlist<-EP$V1
 
-data0=read.table(paste(folder,prefix,"_output_dot_270CTM.dat",sep=""));
+data0=read.table(paste(folder,prefix,"_outputCTM.dat",sep=""));
 #data0=read.table(paste(folder,prefix,"_output.dat",sep=""));
 noisethresh<-read.table(paste(folder,prefix,"_noise_thresh.dat",sep=""))$V1;
-dencl<-read.table(paste(folder,prefix,"_dot_270_summary.dat",sep=""));
-KNNR0<-read.table(paste(folder,prefix,"_dot_270_KNNrecords.dat",sep=""))[,1:(KNN+1)];
-thsum<-as.numeric(read.table(paste(folder,prefix,"_dot_270_thresholds.dat",sep="")));
+dencl<-read.table(paste(folder,prefix,"_summary.dat",sep=""));
+KNNR0<-read.table(paste(folder,prefix,"_KNNrecords.dat",sep=""))[,1:(KNN+1)];
+thsum<-as.numeric(read.table(paste(folder,prefix,"_thresholds.dat",sep="")));
 cenfile<-read.table(paste(folder,prefix,"_cell_centers.dat",sep=""))[noisethresh,];
 #nii_cleaned<-paste(base_folder,"/",folder,"/",prefix,"_cleaned.nii",sep="")
 nii_cleaned<-paste(folder,prefix,"_cleaned.nii",sep="")

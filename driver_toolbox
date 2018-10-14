@@ -9,7 +9,7 @@ classify=$bin/classify_auto
 prefix=$1
 niftifolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/
 #resultsfolder=/home/meyer-lab/SeG/results_toolbox/$prefix/
-resultsfolder=$niftifolder/$prefix/im/im_slice_1/results_toolbox				#CHANGE HERE
+resultsfolder=$niftifolder/$prefix/im/im_slice_1/results_toolbox #_sizes_270				#CHANGE HERE
 if [ ! -d $resultsfolder ]; then mkdir $resultsfolder; fi
 timelogfolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/
 
@@ -18,7 +18,7 @@ epochfile=$timelogfolder/$prefix"_time.log"
 #bash epoch_names $epochfile
 nEP=`cat $epochfile | wc -l`
 nEP=`echo $nEP/2 | bc`
-echo $nEP
+#echo $nEP
 # ----------------------
 # CLEANING 
 
@@ -32,7 +32,7 @@ mwsize=5
 # SEGMENTATION
 
 cosi=$bin/cosi
-echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
+#echo $cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
 #$cosi $resultsfolder/$prefix"_cleaned.nii" $resultsfolder $prefix $CONFIG
 
 # -------------------------
@@ -47,25 +47,28 @@ mkout=$bin/mkout
 
 mkout_raw=$bin/mkout_raw
 #$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_raw.dat"
+$mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$prefix"_output_max.dat"
 
 # -----------------------
 # COLLAPSE WD EPOCHS
 
-echo Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 	#CHANGE HERE	
-#Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 		#CHANGE HERE
+#echo Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 	#CHANGE HERE	
+Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 		#CHANGE HERE
 collapsedepochfile=$resultsfolder/$prefix"_epochsC.dat"
 nEP=`cat $collapsedepochfile | wc -l`
 
-echo "Number of epochs =" $nEP
+#echo "Number of epochs =" $nEP
 
 #-----------------------
 # THRESHOLD CELLS BCL based on random noise model
 #thresh was 0.625 for dots and 0.44 for simple
 
-echo Rscript bcl4_script.R $prefix $resultsfolder 					
-#Rscript bcl4_script.R $prefix $resultsfolder 						
+#echo Rscript bcl4_script.R $prefix $resultsfolder 					
+Rscript bcl4_script.R $prefix $resultsfolder 						
 
 #----------------------
-#CLUSTERING
+nEP=5			#CHANGED HERE
 
-$denscl $resultsfolder/$prefix"_output_dot_270CTM.dat" $resultsfolder/$prefix"_dot_270_summary.dat" $resultsfolder/$prefix"_dot_270_KNNrecords.dat" $nEP 0.5 -4 $resultsfolder/$prefix"_dot_270_thresholds.dat"
+#CLUSTERING
+#echo $denscl $resultsfolder/$prefix"_outputCTM.dat" $resultsfolder/$prefix"_summary.dat" $resultsfolder/$prefix"_KNNrecords.dat" $nEP .5 -4 $resultsfolder/$prefix"_thresholds.dat"
+#$denscl $resultsfolder/$prefix"_outputCTM.dat" $resultsfolder/$prefix"_summary.dat" $resultsfolder/$prefix"_KNNrecords.dat" $nEP .5 -4 $resultsfolder/$prefix"_thresholds.dat"

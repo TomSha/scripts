@@ -3,6 +3,7 @@ args <- commandArgs(trailingOnly = TRUE)
 prefix_list_file = args[1]
 mainresultsfolder = args[2]
 folder_pulled = args[3]
+toolbox = args[4]
 
 #CHANGED 1 - 21/08/28 removed min density threshold for halo removal
 
@@ -22,8 +23,8 @@ resc <- function(x,zero=0.2){
 for(pid in 1:length(prefix_list)){
 #	print(pid)
 	prefix=prefix_list[pid]
-	folder=paste(mainresultsfolder,prefix,"/im/im_slice_1/results_toolbox_sizes/",sep="") 												#CHANGED HERE!!!!!
-	epfile=paste(folder,"/",prefix,"_epochs_dot_270.dat",sep="");																				#CHANGED HERE!!!!!
+	folder=paste(mainresultsfolder,prefix,"/im/im_slice_1/",toolbox,sep="") 												#CHANGED HERE!!!!!
+	epfile=paste(folder,"/",prefix,"_epochsC.dat",sep="");																				#CHANGED HERE!!!!!
 	#epfile=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/",prefix_list[pid],"_time.log",sep="");
 	nifti=paste(folder,"/",prefix,"/im/im_slice_1/rim_slice_1.nii",sep="");
 	
@@ -35,9 +36,9 @@ for(pid in 1:length(prefix_list)){
 	EPlist<-vector(mode="character", length=nEP);
 	EPlist<-as.character(EP$V1[1:nEP])
 
-	data0=read.table(paste(folder,"/",prefix,"_output_dot_270CTM.dat",sep="")); #CHANGED HERE!!!!!!!
-	dencl<-read.table(paste(folder,"/",prefix,"_dot_270_summary.dat",sep=""));  #CHANGE HERE!!!!!!
-	KNNR0<-read.table(paste(folder,"/",prefix,"_dot_270_KNNrecords.dat",sep=""))[,1:(KNN+1)]; #CHANGED HERE!!!!!
+	data0=read.table(paste(folder,"/",prefix,"_outputCTM.dat",sep="")); #CHANGED HERE!!!!!!!
+	dencl<-read.table(paste(folder,"/",prefix,"_summary.dat",sep=""));  #CHANGE HERE!!!!!!
+	KNNR0<-read.table(paste(folder,"/",prefix,"_KNNrecords.dat",sep=""))[,1:(KNN+1)]; #CHANGED HERE!!!!!
 	
 	data=data0[data0$V1 %in% dencl$V1,];
 	#V1 cells V2+ KNNs

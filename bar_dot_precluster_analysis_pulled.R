@@ -1,4 +1,5 @@
-martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+#martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 
 prefix_list=read.table("prefix_list_bars_dots")$V1
 
@@ -42,7 +43,8 @@ nEP<-nrow(ep_list[[i]])/2
 ep_list[[i]]$V1<-floor((ep_list[[i]]$V1+90)*20);
 
 epochs<-ep_list[[i]][,2][2:nEP*2]
-ord<-order(paste(gsub("\\D","",epochs),gsub("[^BD]","",epochs)))
+ord<-paste(gsub("\\D","",epochs),gsub("[^BD]","",epochs))
+ord<-order(gsub("5","05",ord))
 epochs<-epochs[ord]
 outputRCT_list[[i]][,2:ncol(outputRCT_list[[i]])]<-outputRCT_list[[i]][,2:ncol(outputRCT_list[[i]])][,ord]
 }
@@ -91,13 +93,13 @@ DS.mod<-lm(barDS ~ dotDS)
 globals<-data.frame(dotDS,barDS,dotS90,dotS270);
 
 #look at selectivity comparing different size dots. Compare 5 vs 17,26 and 30 degrees. Compare 10 vs 17,26,30 degrees
-sizes<-as.integer(substr(EPlist[[3]],9,10))
-sizeList<-vector("list",length=length(sizes))
-fivedeg<-vector("list",length=3)
-tendeg<-vector("list",length=3)
-for (i in 1:length(sizeList)) sizeList[[i]]<-outputRCT[,2:ncol(outputRCT)][grepl("DOT",epochs)&grepl(sizes[i],epochs)]
-for (i in 3:length(sizeList)) fivedeg[[i-2]]<-(sizeList[[1]]-sizeList[[i]])/(sizeList[[1]]+sizeList[[i]])
-for (i in 3:length(sizeList)) tendeg[[i-2]]<-(sizeList[[2]]-sizeList[[i]])/(sizeList[[2]]+sizeList[[i]])
+#sizes<-as.integer(substr(EPlist[[3]],9,10))
+#sizeList<-vector("list",length=length(sizes))
+#fivedeg<-vector("list",length=3)
+#tendeg<-vector("list",length=3)
+#for (i in 1:length(sizeList)) sizeList[[i]]<-outputRCT[,2:ncol(outputRCT)][grepl("DOT",epochs)&grepl(sizes[i],epochs)]
+#for (i in 3:length(sizeList)) fivedeg[[i-2]]<-(sizeList[[1]]-sizeList[[i]])/(sizeList[[1]]+sizeList[[i]])
+#for (i in 3:length(sizeList)) tendeg[[i-2]]<-(sizeList[[2]]-sizeList[[i]])/(sizeList[[2]]+sizeList[[i]])
 
 
 #look at the mean responses across epochs
@@ -129,7 +131,7 @@ CoVa_list<-lapply(CoVa_list,function(x) x[,reord])
 
 #Calculate the entropy of all the cells response to different sizes 
 outputRCT_list_ent<-lapply(outputRCT_list_split, function(output) lapply(output, function(output) output/rowSums(output)))
-outputRCT_list_ent<-lapply(outputRCT_list_ent, function(output) lapply(output,function(output) apply(output,1,function(x) sum(x*log2(1/x)))
+outputRCT_list_ent<-lapply(outputRCT_list_ent, function(output) lapply(output,function(output) apply(output,1,function(x) sum(x*log2(1/x)))))
 max_ent<-log2(length(EPlist[[1]]))
 
 
@@ -157,29 +159,67 @@ plot_cell <- function(id,exp,xmax=100000){
 
 #2 Plots the histogram of the selectivity of dots vs bars for all sizes and directions
 plot_dotselec<-function(){
-    par(mfrow=c(2,5));par(oma=c(0,0,4,0));
-
-	i=5; hist(dotS_SF[,i],breaks=seq(min(dotselec),max(dotselec),l=20),xlim=c(-1,1),ylim=c(0,220),xlab=paste(epochs[i*2],":",epochs[i*2-1],sep=""),main="",cex.lab=0.8)
-    for (i in 1:4){
-        hist(dotS_SF[,i],breaks=seq(min(dotselec),max(dotselec),l=20),xlim=c(-1,1),ylim=c(0,220),xlab=paste(epochs[i*2],":",epochs[i*2-1],sep=""),main="",cex.lab=0.8)
+	dev.new(width=20,height=10)
+    par(mfrow=c(2,5));par(oma=c(6,0,4,0));
+	param_list<-vector("list",length=ncol(dotselec))
+	selec_list<-vector("list",length=2)
+    for (i in 1:5){
+       param_list[[i]]<-hist(dotS_SF[,i],breaks=seq(min(dotselec),max(dotselec),l=20),xlim=c(-1,1),ylim=c(0,220),xlab="",main=paste(paste(substr(epochs[i*2-1],start=9,stop=11),"ᵒ",sep="")),cex.main=1.5,cex.lab=1,col=martincolorscale[1])
 	    }
-	i=10; hist(dotS_SF[,i],breaks=seq(min(dotselec),max(dotselec),l=20),xlim=c(-1,1),ylim=c(0,220),xlab=paste(epochs[i*2],":",epochs[i*2-1],sep=""),main="",cex.lab=0.8)
-	for (i in 6:9){
-		        hist(dotS_SF[,i],breaks=seq(min(dotselec),max(dotselec),l=20),xlim=c(-1,1),ylim=c(0,220),xlab=paste(epochs[i*2],":",epochs[i*2-1],sep=""),main="",cex.lab=0.8)
-				  }
-	mtext("dot to bar selectivity for each size and direction\n+1 = dot & -1 = bar", outer=T)
+	for (i in 6:10){
+	    param_list[[i]]<-hist(dotS_SF[,i],breaks=seq(min(dotselec),max(dotselec),l=20),xlim=c(-1,1),ylim=c(0,220),xlab="",main="",cex.main=1.5,,cex.lab=1,col=martincolorscale[2])
+	  }
+	
+	mtext("dot to bar selectivity", outer=T,cex=2)
+
+	par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
+	plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
+	legend("bottomleft",inset=c(0.01,0.01),legend=c("270ᵒ direction","90ᵒ direction"),xpd=TRUE,fill=martincolorscale[1:2],cex=1.5)
+	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = dot selective","-1 = bar selective"),xpd=TRUE,cex=1.5)
+
+	dev.new(width=10,height=6);
+	par(mfrow=c(1,2), oma=c(0,0,4,0));
+    param_list[[i+1]]<-hist(dotS270,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotS90,dotS270)),max(c(dotS90,dotS270)),l=30),main="270ᵒ direction",xlab="",col=martincolorscale[1]);
+    param_list[[i+2]]<-hist(dotS90,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotS90,dotS270)),max(c(dotS90,dotS270)),l=30),main="90ᵒ direction",xlab="",col=martincolorscale[2]);
+	param_list[[i+3]]<-hist(dotS,plot=F)
+	mtext("dot to bar selectivity", outer=T,cex=1.5)
+	selec_list[[1]]<-sapply(param_list, function(x) sum(x$counts[x$mid>=0.5]))
+	selec_list[[2]]<-sapply(param_list, function(x) sum(x$counts[x$mid<=-0.5]))
+	return(selec_list)
+
 }
 
 #3 Plots the histogram of DS for all sizes and bars/dots
 plot_DS<-function(){
-	par(mfrow=c(2,5),oma=c(0,0,2,0));
+	dev.new(width=20,height=10)
+	par(oma=c(6,0,4,0));
+	lmat<-matrix(1:10,ncol=ncol(barDS_SF),byrow=F)
+	layout(lmat)
+	param_list<-vector("list",length=ncol(DSdf))
+    selec_list<-vector("list",length=2)
 
 	for (i in 1:ncol(barDS_SF))
 		{
-	    hist(barDS_SF[,i],breaks=seq(min(DSdf),max(DSdf),l=20),xlim=c(-1,1),ylim=c(0,220),xlab=paste(paste(EPlist[[2]][i]," - ",EPlist[[1]][i],sep="")),cex.lab=0.8,main="")
-		hist(dotDS_SF[,i],breaks=seq(min(DSdf),max(DSdf),l=20),xlim=c(-1,1),ylim=c(0,220),xlab=paste(paste(EPlist[[4]][i]," - ",EPlist[[3]][i],sep="")),cex.lab=0.8,main="")
+	    param_list[[i]]<-hist(barDS_SF[,i],breaks=seq(min(DSdf),max(DSdf),l=20),xlim=c(-1,1),ylim=c(0,220),xlab="",cex.lab=0.8,main=paste(paste(substr(epochs[i*2-1],start=9,stop=11),"ᵒ",sep="")),cex.main=1.5,col=martincolorscale[1])
+		param_list[[i+ncol(dotDS_SF)]]<-hist(dotDS_SF[,i],breaks=seq(min(DSdf),max(DSdf),l=20),xlim=c(-1,1),ylim=c(0,220),xlab="",cex.lab=0.8,main="",col=martincolorscale[2])
 	    }
-	mtext("Direction selectivity of dots and bars for each size", outer=T)
+		
+	mtext("Direction selectivity", outer=T,cex=2)
+	par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
+	plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
+	legend("bottomleft",inset=c(0.01,0.01),legend=c("bar","dot"),xpd=TRUE,fill=martincolorscale[1:2],cex=1.5)
+	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = 90ᵒ selective","-1 = 270ᵒ selective"),xpd=TRUE,cex=1.5)
+
+	dev.new(width=10,height=6);
+	par(mfrow=c(1,2), oma=c(0,0,4,0));
+	param_list[[11]]<-hist(dotDS,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotDS,barDS)),max(c(dotDS,barDS)),l=30),main="dot",xlab="",col=martincolorscale[1]);
+    param_list[[12]]<-hist(barDS,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotDS,barDS)),max(c(dotDS,barDS)),l=30),main="bar",xlab="",col=martincolorscale[2]);
+	param_list[[13]]<-hist(DS,plot=F)
+	mtext("direction selectivity", outer=T,cex=1.5)
+	selec_list[[1]]<-sapply(param_list, function(x) sum(x$counts[x$mid>=0.5]))
+	selec_list[[2]]<-sapply(param_list, function(x) sum(x$counts[x$mid<=-0.5]))
+	return(selec_list)
+
 }
 
 

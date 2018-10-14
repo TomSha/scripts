@@ -12,6 +12,8 @@ timelog=read.table(args[3])$V1+90; #CHANGED HERE 6/7/18 for 180614_PVN_barrage4_
 
 #---------remove epochs from raw output---------------
 outputR=read.table(paste(resultsfolder,"/",prefix,"_output_raw.dat",sep=""));
+outputM=read.table(paste(resultsfolder,"/",prefix,"_output_max.dat",sep=""));
+
 #------------------------------------------------------
 
 nEP=length(epochs)/2;
@@ -20,6 +22,7 @@ epochs=epochs[1:nEP *2];
 outputfolderC <- paste(resultsfolder,"/",prefix,"_outputC.dat",sep="");
 epochfolderC <- paste(resultsfolder,"/",prefix,"_epochsC.dat",sep="");
 outputfolderRC <- paste(resultsfolder,"/",prefix,"_output_rawC.dat",sep="");
+outputfolderMC <- paste(resultsfolder,"/",prefix,"_output_maxC.dat",sep="");
 EPtimefolderC <- paste(resultsfolder,"/",prefix,"_EPtimeC.dat",sep="");
 temp <- paste(resultsfolder,"/",prefix,"_temp.dat",sep="");
 
@@ -37,6 +40,9 @@ write.table(outputC, outputfolderC, row.names = F, col.names = F);
 
 outputRC<-outputR[,c(1,epochsI+1)];
 write.table(outputRC, outputfolderRC, row.names = F, col.names = F);
+
+outputMC<-outputM[,c(1,epochsI+1)];
+write.table(outputMC, outputfolderMC, row.names = F, col.names= F);
 
 #--------------Generate vector of names of epochs----------------------
 epochsC<- grep((stim), epochs, value = T,invert=T);

@@ -1,4 +1,4 @@
-prefix="180607_PVN_barrage4_F1_1"
+prefix="180606_PVN_barrage4_F1_1"
 
 folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox/",prefix,sep="")
 epfile=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/",prefix,"_time.log",sep="")
@@ -6,6 +6,7 @@ nifti=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/
 
 
 outputRCT<-read.table(paste(folder,"_output_rawCT.dat",sep=""))
+output_max<-read.table(paste(folder,"_output_max.dat",sep=""))
 output<-read.table(paste(folder,"_outputC.dat",sep=""))
 noisethresh<-read.table(paste(folder,"_noise_thresh.dat",sep=""))
 cenfile<-read.table(paste(folder,"_cell_centers.dat",sep=""))[noisethresh[,1],]
@@ -85,11 +86,11 @@ for (i in 3:length(sizeList)) tendeg[[i-2]]<-(sizeList[[2]]-sizeList[[i]])/(size
 
 min_max<-function(x) (x-min(x))/(max(x)-min(x))
 EPscale<-outputRCT[,2:ncol(outputRCT)]/rowMeans(outputRCT[,2:ncol(outputRCT)])
-EPscale<-apply(EPscale,2,minMax)
+EPscale<-apply(EPscale,2,min_max)
 EPscale270<-rowMeans(outputRCT[,2:ncol(outputRCT)][,grep("270",epochs)])
-EPscale270<-minMax(EPscale270)
+EPscale270<-min_max(EPscale270)
 EPscale90<-rowMeans(outputRCT[,2:ncol(outputRCT)][,grep("90",epochs)])
-EPscale90<-minMax(EPscale90)
+EPscale90<-min_max(EPscale90)
 
 
 
