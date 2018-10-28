@@ -49,15 +49,17 @@ for (i in 1:length(prefix_list)){
 	nEP<-length(epochsnoC[[i]])/2;
 	epochsnoC[[i]]<-epochsnoC[[i]][1:nEP*2];
 	ord2<-order(epochsnoC[[i]]);
+	epochsnoC[[i]]<-epochsnoC[[i]][ord2]#new
 	epochstime_list[[i]]<-read.table(timelogfolder)$V1+90;
 	epochstime_list[[i]]<-epochstime_list[[i]]*20; #multiple by Hz to get frame number
 	EPtimeC[[i]]<-read.table(paste(resultsfolder,"/",prefix,"_EPtimeC.dat",sep=""))$V1
 	EPtimeC[[i]]<-EPtimeC[[i]][ord]
 	output0[[i]]<-read.table(paste(resultsfolder,"/",prefix,"_outputC.dat",sep=""))[noisethresh[[i]],];
 	outnoremoval[[i]]<-read.table(paste(resultsfolder,"/",prefix,"_output_rawC.dat",sep=""))
-	outputR0[[i]]<-read.table(paste(resultsfolder,prefix,"_output_rawC.dat",sep=""))[noisethresh[[i]],];
-	outputRnoC[[i]]<-read.table(paste(resultsfolder,prefix,"_output_raw.dat",sep=""))[noisethresh[[i]],];
-	outputRnoC[[i]]<-outputRnoC[[i]][,2:ncol(outputRnoC[[i]])][ord2];
+	outputR0[[i]]<-read.table(paste(resultsfolder,prefix,"_output_rawCT.dat",sep=""))#[noisethresh[[i]],]
+	outputR0[[i]][,2:ncol(outputR0[[i]])]<-outputR0[[i]][,2:ncol(outputR0[[i]])][,ord]
+	outputRnoC[[i]]<-read.table(paste(resultsfolder,prefix,"_output_raw.dat",sep=""))[noisethresh[[i]],]#[,-2];
+	outputRnoC[[i]][,2:ncol(outputRnoC[[i]])]<-outputRnoC[[i]][,2:ncol(outputRnoC[[i]])]#[ord2];
 
 	dencl[[i]]<-read.table(paste(resultsfolder,"/",prefix,"_summary.dat",sep=""));
 	dencl[[i]]<-dencl[[i]][order(dencl[[i]]$V1),];
@@ -553,14 +555,14 @@ location_max<-function(){
 	location_max30<-vector("list",length(prefix_list));
 	
 	for (i in 1:length(prefix_list)){
-		epochs_W3 <-grep(("WIGGLY3_"), epochsnoC[[i]], value = F, invert=F);
-		epochs_W15 <-grep(("WIGGLY15_"), epochsnoC[[i]], value = F, invert=F);
-        epochs_W30 <-grep(("WIGGLY30_"), epochsnoC[[i]], value = F, invert=F);
-		outputRnoC[[i]]<-setNames(outputRnoC[[i]],epochsnoC[[i]]);
+		epochs_W3 <-grep(("WIGGLY3_"), epochsC[[i]], value = F, invert=F);
+		epochs_W15 <-grep(("WIGGLY15_"), epochsC[[i]], value = F, invert=F);
+        epochs_W30 <-grep(("WIGGLY30_"), epochsC[[i]], value = F, invert=F);
+		out<-setNames(outputR0[[i]][,2:ncol(outputR0[[i]])],epochsC[[i]]);
 
-		location_max3[[i]]<-table(colnames(outputRnoC[[i]][epochs_W3])[max.col(outputRnoC[[i]][epochs_W3])]);
-		location_max15[[i]]<-table(colnames(outputRnoC[[i]][epochs_W15])[max.col(outputRnoC[[i]][epochs_W15])]);
-		location_max30[[i]]<-table(colnames(outputRnoC[[i]][epochs_W30])[max.col(outputRnoC[[i]][epochs_W30])]);
+		location_max3[[i]]<-table(factor(colnames(out[,epochs_W3])[max.col(out[,epochs_W3])],levels=epochsC[[i]][epochs_W3]));
+		location_max15[[i]]<-table(factor(colnames(out[,epochs_W15])[max.col(out[,epochs_W15])],levels=epochsC[[i]][epochs_W15]));
+		location_max30[[i]]<-table(factor(colnames(out[,epochs_W30])[max.col(out[,epochs_W30])],levels=epochsC[[i]][epochs_W30]));
 
 		}
 

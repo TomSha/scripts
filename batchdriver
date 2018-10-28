@@ -4,5 +4,5 @@ folderlist=$1
 
 while read folder;
   do
-	  bash driver_toolbox $folder
+	  bash driver_toolbox_sizes $folder
 done < $folderlist

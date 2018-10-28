@@ -1,3 +1,5 @@
+martincolorscale=c("#6ef914ff","#060cf1ff","#f106e3ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+#martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff","#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff");
 #args <- commandArgs(trailingOnly = TRUE)
 
 #prefix<- args[1]
@@ -6,14 +8,13 @@
 
 require(plotrix)
 require(mmand)
-martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
-prefix_list<-read.table("/home/meyer-lab/ToolBox_v3.6/scripts/prefix_list_bars_dots")$V1	                					#CHANGE HERE
-results_toolbox<-"results_toolbox_sizes_270"																					#ALSO CHANGE HERE
-folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_bars_dots_sizes_270",sep="") 	#ALSO CHANGE HERE	
+prefix_list<-read.table("/home/meyer-lab/ToolBox_v3.6/scripts/prefix_list_rep1")$V1	                					#CHANGE HERE
+results_toolbox<-"results_toolbox_DS"																					#ALSO CHANGE HERE
+folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_DS",sep="") 	#ALSO CHANGE HERE	
 niftifolder="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/"
 epfile=paste(folder,"/pulled_epochsC.dat",sep="");														
 #how many nearest neighbours need to be in same cluster for cell not to be removed as a halo
-KNN=3
+KNN=4
 EP<-read.table(epfile);
 nEP=nrow(EP)
 EPlist<-vector(mode="character", length=nEP);
@@ -58,10 +59,16 @@ for(i in 1:length(prefix_list)){
 	ep_list[[i]]$V1<-(ep_list[[i]]$V1+90)*20
 	epochsC_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_epochsC.dat",sep=""))$V1
 	output_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_outputCTM.dat",sep=""))
-	output_list[[i]][,2:ncol(output_list[[i]])]<-output_list[[i]][,2:ncol(output_list[[i]])][,order(as.numeric(gsub("\\D","",epochsC_list[[i]])))]#check this! random bar/dot order?
+	ord<-paste(gsub("\\D","",epochsC_list[[i]]),gsub("[^BD]","",epochsC_list[[i]]))#new
+	ord<-order(gsub("5","05",ord))#new NB is overwritten later on
+	output_list[[i]][,2:ncol(output_list[[i]])]<-output_list[[i]][,2:ncol(output_list[[i]])][,ord]
 	output_raw_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_output_rawCT.dat",sep=""))
 	ep<-ep_list[[i]]$V2[2:(nrow(ep_list[[i]])/2)*2]
-	output_raw_list[[i]][,2:ncol(output_raw_list[[i]])]<-output_raw_list[[i]][,2:ncol(output_raw_list[[i]])][,order(paste(gsub("\\D","",ep),gsub("[^BD]","",ep)))]
+	ep_ord<-paste(gsub("\\D","",ep),gsub("[^BD]","",ep))#new
+	ep_ord<-order(gsub("5","05",ep_ord))#new
+	ep<-ep[ep_ord]#new
+#	output_raw_list[[i]][,2:ncol(output_raw_list[[i]])]<-output_raw_list[[i]][,2:ncol(output_raw_list[[i]])][,order(paste(gsub("\\D","",ep),gsub("[^BD]","",ep)))]
+	output_raw_list[[i]][,2:ncol(output_raw_list[[i]])]<-output_raw_list[[i]][,2:ncol(output_raw_list[[i]])][,ep_ord]
 }
 
 total_nEP<-nrow(ep_list[[1]])/2
@@ -94,8 +101,8 @@ threshold<-hl
 hc <- sub('FF$','77',heat.colors(nEP))
 write.table(file=paste(folder,"/pulled_inc.dat",sep=""),threshold)
 
-ord<-order(as.numeric(gsub("\\D","",EPlist)))
-#ord<-order(EPlist)
+ord<-paste(gsub("\\D","",EPlist),gsub("[^BD]","",EPlist))
+ord<-order(gsub("5","05",ord))
 
 sizes<-rep(0,max(cl));
 sizes[as.numeric(names(table(cl[threshold])))]=as.numeric(table(cl[threshold]));
@@ -131,15 +138,24 @@ for(i in 1:max(cl)){
 
 dotS_list<-lapply(output_raw_list,function(output) (output[,2:ncol(output)][,1:(length(ep)/2)*2] - output[,2:ncol(output)][,1:(length(ep)/2)*2-1]) / (output[,2:ncol(output)][,1:(length(ep)/2)*2] + output[,2:ncol(output)][,1:(length(ep)/2)*2-1]))
 
+#dotS_list<-lapply(output_raw_list, function(output_raw) (output_raw[,grep("DOT_270_30",ep)+1]-output_raw[,grep("BAR_270_30",ep)+1])/(output_raw[,grep("DOT_270_30",ep)+1]+output_raw[,grep("BAR_270_30",ep)+1]))
+
 dotDS_list<-lapply(output_raw_list, function(output_raw) (rowSums(output_raw[,grep("DOT_90",ep)+1])-rowSums(output_raw[,grep("DOT_270",ep)+1]))/(rowSums(output_raw[,grep("DOT_90",ep)+1])+rowSums(output_raw[,grep("DOT_270",ep)+1])))
+
+#dotDS_list<-lapply(output_raw_list, function(output_raw) (output_raw[,grep("DOT_90_5",ep)+1]-output_raw[,grep("DOT_270_5",ep)+1])/(output_raw[,grep("DOT_90_5",ep)+1]+output_raw[,grep("DOT_270_5",ep)+1]))
+
+
+dot_ent_list<-lapply(output_raw_list, function(output) output[,2:ncol(output)]/rowSums(output[,2:ncol(output)]))
+dot_ent_list<-lapply(dot_ent_list, function(ent) apply(ent,1,function(x) sum(x*log2(1/x))))
+max_ent<-log2(length(ep))
 
 #FUNCTIONS
 
-plot_traj<-function(X,min=0,max=1,NS=1,AS=1,CC="gray"){
+plot_traj<-function(X,min=0,max=1,NS=1,AS=1,CC=martincolorscale[X+21]){
 	par(las=2,mar=c(3,10,2,3))
 	ord2<-order(centers[X,]);
 	pos<-barplot(centers[X,ord2],names.arg=EPlist[ord2],horiz=T,xlim=c(0,centers[X,ord2[nEP]]+centers_sd[X,ord2[nEP]]),cex.axis=AS,cex.names=NS,col=CC);
-#	pos<-barplot(centers[X,ord2],names.arg=EPlist[ord2],horiz=T,xlim=c(-1,centers[X,ord2[nEP]]+centers_sd[X,ord2[nEP]]),cex.axis=AS,cex.names=NS,col=CC);
+#	pos<-barplot(centers[X,ord2],names.arg=c("POSTERIOR","ANTERIOR"),horiz=T,xlim=c(-1,centers[X,ord2[nEP]]+centers_sd[X,ord2[nEP]]),cex.axis=AS,cex.names=NS,col=CC);
 	arrows(y0=pos,y1=pos,x0=centers[X,ord2]-centers_sd[X,ord2],x1=centers[X,ord2]+centers_sd[X,ord2],code=3,length=0,col="black");
 
 }
@@ -148,9 +164,10 @@ plot_box<-function(X){
 	par(mar=c(3,7,2,2))
 #	ord2<-order(centers[X,]);
 	fish<-sum(!table(data$V2[cl==X & threshold])==0)
-	boxplot(data[cl==X & threshold,4+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,"in",fish,"/",length(prefix_list),"fish"))
+	boxplot(data[cl==X & threshold,4+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,"in",fish,"/",length(prefix_list),"fish"),col=c(rep(martincolorscale[1],5),rep(martincolorscale[2],5)))
 #	abline(v=0, lty=2,col="blue")
 }
+
 
 plot_box_experiment<-function(cluster,experiment){
 	par(mar=c(3,7,2,2))
@@ -158,7 +175,7 @@ plot_box_experiment<-function(cluster,experiment){
 	if(nrow(output)==0){
 		plot(0,xaxt='n',yaxt='n',bty='n',pch='',ylab='',xlab='')
 	}else{
-		boxplot(output,horizontal=T,names=EPlist[ord],las=2)
+		boxplot(output,horizontal=T,names=EPlist[ord],las=2,col=c(rep(martincolorscale[1],5),rep(martincolorscale[2],5)))
 	}
 }
 
@@ -184,10 +201,10 @@ plot_dp_cluster <- function(c){
 	logdist<-seq(min(log(dencl$V4)),range(dencl$V4,finite=T)[2],length.out=100);
 	logprob<-seq(min(log(dencl$V3)),max(log(dencl$V3)),length.out=100);
 	colors<-rep("black",nrow(dencl));
-	colors[cl[threshold]==c]="red";
+	colors[cl[threshold]==c]=martincolorscale[11];
 	plot(log(dencl$V4)[threshold],log(dencl$V3)[threshold],col=colors,pch=19,cex=1,xlab="log(distance)",ylab="log(density)",cex.lab=1.5);
 	#lines(rep(thsum[1],100),logprob,lty=2,col="green")
-	lines(logdist,-nEP*logdist+thsum[2],lty=2,col="green")
+	lines(logdist,-nEP*logdist+thsum[2],lty=2,col=martincolorscale[1])
 }
 
 
@@ -207,23 +224,27 @@ plot_corvec<-function(P=19,S=1.5,DR=50){
 	}
 }
 
-plot_image<-function(cluster,experiment,P=19,S=1.5,thresh=T){
+plot_image<-function(cluster,experiment,P=19,S=1.5,thresh=T,cell="ALL"){
 #dencl_list[[k]]$V6 : C1 ID from fish k
 #data$V4			: C1 ID
 #data$V2			: prefix
 
+	y=center_list[[experiment]]$V1+1
+	x=center_list[[experiment]]$V2+1
+	nx=dimvec_list[[experiment]][1]
+	ny=dimvec_list[[experiment]][2]
+	image(1:nx,1:ny,matrix(avtab_list[[experiment]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE);
 	for (i in 1:length(cluster)){
-			y=center_list[[experiment]]$V1+1
-			x=center_list[[experiment]]$V2+1
-			nx=dimvec_list[[experiment]][1]
-			ny=dimvec_list[[experiment]][2]
-			image(1:nx,1:ny,matrix(avtab_list[[experiment]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE);
-			if(thresh){
-			selec=dencl_list[[experiment]]$V6 %in% (data$V4[data$V2==prefix_list[experiment] & cl==cluster[i] & threshold]-1)
-			}else{
-			selec=dencl_list[[experiment]]$V6 %in% (data$V4[data$V2==prefix_list[experiment] & cl==cluster[i]]-1)
-			}
-			points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
+		if(thresh){
+		selec=dencl_list[[experiment]]$V6 %in% (data$V4[data$V2==prefix_list[experiment] & cl==cluster[i] & threshold]-1)
+		}else{
+		selec=dencl_list[[experiment]]$V6 %in% (data$V4[data$V2==prefix_list[experiment] & cl==cluster[i]]-1)
+		}
+		if(cell=="ALL"){
+		points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
+		}else{
+		points(x[ selec  ][cell],y[selec ][cell],col=martincolorscale[i],pch=P,cex=S)
+		}	
 	}
 }
 
@@ -266,23 +287,23 @@ plot_trace_average<-function(cluster,experiment,xmax=10000){
 		bin_cluster<-lapply(params,"[[",3)
 		bin_cluster<-lapply(bin_cluster,function(x) x/mean(x))
 		bin_cluster<-sapply(bin_cluster,unlist)
-		plot((rowMeans(bin_cluster)),type='l',ylim=(c(0,max(rowMeans(bin_cluster)))),main=paste(cluster),xaxt='n',ylab="",xlab="",col="red3");
+		plot((rowMeans(bin_cluster)),type='l',ylim=(c(0,max(rowMeans(bin_cluster)))),main=paste(cluster),xaxt='n',ylab="",xlab="",col=martincolorscale[2]);
 		axis(1,at=params[[1]]$ep$V1[1:total_nEP*2-1],label=params[[1]]$ep$V2[1:total_nEP*2-1],las=2);
-		rect(xleft=params[[1]]$ep$V1[1:total_nEP *2 -1],xright=params[[1]]$ep$V1[1:total_nEP *2 ],ybottom=rep(-1000,total_nEP*2),ytop=rep(xmax,total_nEP*2),col=rgb(0,1,0,.05));
+		rect(xleft=params[[1]]$ep$V1[1:total_nEP *2 -1],xright=params[[1]]$ep$V1[1:total_nEP *2 ],ybottom=rep(-1000,total_nEP*2),ytop=rep(xmax,total_nEP*2),col=rgb(0,0,0,.05));
 	}
 }
 
 
 plot_cell<-function(cluster,experiment,cell){
 	output<-output_list[[experiment]]
-	lmat<-matrix(c(1,1,2,3),ncol=2,byrow=T)
+	lmat<-matrix(c(1,1,1,2,3,4),ncol=3,byrow=T)
 	par(mar=c(5,3,2,1))
 	layout(lmat)
 	
 	id<-plot_trace(cluster,experiment,cell)[3]
 	barplot(as.numeric(output[output$V1==id,2:ncol(output)]),names.arg=EPlist[ord],las=2)
 	plot_box(cluster)
-
+	plot_image(cluster,experiment,cell=cell)	
 }
 	
 plot_cluster<-function(cluster,new_plot=F){
@@ -324,19 +345,46 @@ plot_cluster<-function(cluster,new_plot=F){
 plot_dotS_cluster<-function(cluster){
 	index<-mapply(function(output,cells) output[,1] %in% cells, output_raw_list,cluster_cells_ID(cluster))
 	index<-unlist(index)
+#	dotS<-unlist(dotS_list)
 	dotS<-do.call(rbind,dotS_list)[index,]
 	dotS<-rowSums(dotS)/10
-	hist(dotS,xlim=c(-1,1),breaks=seq(min(dotS),max(dotS),l=7))
+	hist(dotS,xlim=c(-1,1),breaks=seq(min(dotS),max(dotS),l=7),main="",col=martincolorscale[1],xlab="")
+	legend("topleft",inset=c(0.05,0.01),legend=c("1 = dot selective","-1 = bar selective"),xpd=TRUE,cex=1)
+
+
 }
 
 plot_dotDS_cluster<-function(cluster){
 	index<-mapply(function(output,cells) output[,1] %in% cells, output_raw_list,cluster_cells_ID(cluster))
 	index<-unlist(index)
 	DS<-as.numeric(unlist(dotDS_list)[index])
-	hist(DS,xlim=c(-1,1),breaks=seq(min(DS),max(DS),l=7))
+	hist(DS,xlim=c(-1,1),breaks=seq(min(DS),max(DS),l=7),main="",col=martincolorscale[1],xlab="")
+	legend("topright",inset=c(0.05,0.01),legend=c("1 = 90ᵒ","-1 = 270ᵒ selective"),xpd=TRUE,cex=1)
+
+}
+
+plot_ent_cluster<-function(cluster){
+	index<-mapply(function(output,cells) output[,1] %in% cells, output_raw_list,cluster_cells_ID(cluster))
+	index<-unlist(index)
+	ent<-as.numeric(unlist(dot_ent_list)[index])
+	boxplot(x=ent,las=2,cex.axis=0.8,boxfill=rgb(1, 1, 1, alpha=1), border=rgb(1, 1, 1, alpha=1),ylim=c(0,max_ent),ylab="entropy")
+	boxplot(ent,boxwex=0.5,add=T,at=0.75,yaxt="n",xaxt="n",boxfill=martincolorscale[1])
+	boxplot(unlist(dot_ent_list),boxwex=0.5,add=T,at=1.25,yaxt="n",xaxt="n",boxfill=martincolorscale[2])
+	abline(h=max_ent,lty=3)
+	legend("bottomleft",inset=c(0.05,0.01),legend=c(paste("cluster",cluster),"all cells"),fill=martincolorscale[1:2],xpd=TRUE,cex=1.5)
+
 }
 
 
+
+plot_analysis<-function(cluster){
+	dev.new(width=18,height=5)
+	par(mfrow=c(1,4))
+	plot_box(cluster)
+	plot_ent_cluster(cluster)
+	plot_dotS_cluster(cluster)
+	plot_dotDS_cluster(cluster)
+}
 
 #plot_cluster<-function(cluster,P=19,S=1.5,nothresh=F,traj_device=NA){
 

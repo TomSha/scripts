@@ -9,16 +9,15 @@ classify=$bin/classify_auto
 prefix=$1
 niftifolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/
 #resultsfolder=/home/meyer-lab/SeG/results_toolbox/$prefix/
-resultsfolder=$niftifolder/$prefix/im/im_slice_1/results_toolbox_sizes				#CHANGE HERE
+resultsfolder=$niftifolder/$prefix/im/im_slice_1/results_toolbox_DS				#CHANGE HERE!!!!!!!!!!!!!
 if [ ! -d $resultsfolder ]; then mkdir $resultsfolder; fi
 timelogfolder=/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/
 
 nii=$niftifolder/$prefix/im/im_slice_1/rim_slice_1.nii
 epochfile=$timelogfolder/$prefix"_time.log"
 #bash epoch_names $epochfile
-#nEP=`cat $resultsfolder/$prefix"_epochs_dots_270.dat" | wc -l`
+nEP=`cat $resultsfolder/$prefix"_epochsC.dat" | wc -l`
 #nEP=`echo $nEP/2 | bc`
-nEP=5
 echo $nEP
 
 # ----------------------
@@ -67,8 +66,10 @@ echo "Number of epochs =" $nEP
 #echo Rscript bcl4_script.R $prefix $resultsfolder 					
 #Rscript bcl4_script.R $prefix $resultsfolder 						
 
+cat $collapsedepochfile
+
 #----------------------
 #CLUSTERING
-echo $denscl $resultsfolder/$prefix"_output_dot_270CTM.dat" $resultsfolder/$prefix"_dot_270_summary.dat" $resultsfolder/$prefix"_dot_270_KNNrecords.dat" $nEP 3 -1 $resultsfolder/$prefix"_dot_270_thresholds.dat"
+echo $denscl $resultsfolder/$prefix"_outputCTM.dat" $resultsfolder/$prefix"_summary.dat" $resultsfolder/$prefix"_KNNrecords.dat" $nEP 0.5 -4 $resultsfolder/$prefix"_thresholds.dat"
+$denscl $resultsfolder/$prefix"_outputCTM.dat" $resultsfolder/$prefix"_summary.dat" $resultsfolder/$prefix"_KNNrecords.dat" $nEP 0.5 -4 $resultsfolder/$prefix"_thresholds.dat"
 
-$denscl $resultsfolder/$prefix"_output_dot_270CTM.dat" $resultsfolder/$prefix"_dot_270_summary.dat" $resultsfolder/$prefix"_dot_270_KNNrecords.dat" $nEP 3 -1 $resultsfolder/$prefix"_dot_270_thresholds.dat"

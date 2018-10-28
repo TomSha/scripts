@@ -1,5 +1,5 @@
-#martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
-martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+#martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 
 prefix_list=read.table("prefix_list_bars_dots")$V1
 
@@ -16,6 +16,7 @@ y_list<-vector("list",length(prefix_list))
 x_list<-vector("list",length(prefix_list))
 ep_list<-vector("list",length(prefix_list))
 EPlength_list<-vector("list",length(prefix_list))
+corvec_list<-vector("list",length(prefix_list))
 
 for (i in 1:length(prefix_list)){
 prefix<-prefix_list[i]
@@ -31,6 +32,7 @@ avtab_list[[i]]<-read.table(paste(folder,prefix,"_mip.dat",sep=""));
 dimvec_list[[i]]<-system(paste("nifti_tool -disp_hdr -infiles",nifti_list[[i]],"| grep \" dim \" | awk '{print $5, $6,$7}'"),intern=T);
 dimvec_list[[i]]<-as.numeric(strsplit(dimvec_list[[i]]," ")[[1]]);
 EPlength_list[[i]]<-read.table(paste(folder,prefix,"_EPtimeC.dat",sep=""))$V1
+corvec_list[[i]]<-read.table(paste(folder,prefix,"_corvec.dat",sep=""))[noisethresh_list[[i]][,1],];
 
 nx_list[[i]]=dimvec_list[[i]][1]
 ny_list[[i]]=dimvec_list[[i]][2]
@@ -47,10 +49,11 @@ ord<-paste(gsub("\\D","",epochs),gsub("[^BD]","",epochs))
 ord<-order(gsub("5","05",ord))
 epochs<-epochs[ord]
 outputRCT_list[[i]][,2:ncol(outputRCT_list[[i]])]<-outputRCT_list[[i]][,2:ncol(outputRCT_list[[i]])][,ord]
+
 }
 
 outputRCT<-do.call(rbind,outputRCT_list)
-
+corvec<-unlist(corvec_list)
 
 #minus 1 because we need to exclude the concentric
 split<-(nEP-1)/2
@@ -78,8 +81,6 @@ for (i in 1:length(EPsplit)){
 EPlist<-lapply(EPlist,function(x) x[reord])
 Olist<-lapply(Olist,function(x) x[,c(1,(reord+1))])
 
-#output[[fish]][[epochs]]
-outputRCT_list_split<-lapply(outputRCT_list,function(output) lapply(EPindex, function(index) output[,c(index+1)]))
 
 barDS_SF<-(Olist[[2]][,2:ncol(Olist[[2]])]-Olist[[1]][,2:ncol(Olist[[1]])])/(Olist[[2]][,2:ncol(Olist[[2]])]+Olist[[1]][,2:ncol(Olist[[1]])])
 dotDS_SF<-(Olist[[4]][,2:ncol(Olist[[4]])]-Olist[[3]][,2:ncol(Olist[[3]])])/(Olist[[4]][,2:ncol(Olist[[4]])]+Olist[[3]][,2:ncol(Olist[[3]])])
@@ -130,10 +131,20 @@ EPSD_list<-lapply(EPSD_list,function(x) x[,reord])
 CoVa_list<-lapply(CoVa_list,function(x) x[,reord])
 
 #Calculate the entropy of all the cells response to different sizes 
+#output[[fish]][[epochs]]
+outputRCT_list_split<-lapply(outputRCT_list,function(output) lapply(EPindex, function(index) output[,c(index+1)]))
+
 outputRCT_list_ent<-lapply(outputRCT_list_split, function(output) lapply(output, function(output) output/rowSums(output)))
 outputRCT_list_ent<-lapply(outputRCT_list_ent, function(output) lapply(output,function(output) apply(output,1,function(x) sum(x*log2(1/x)))))
 max_ent<-log2(length(EPlist[[1]]))
 
+#calculate the entropy of all the cells to all stimuli
+outputRCT_list_ent_all<-lapply(outputRCT_list, function(output) t(apply(output[,2:ncol(output)],1,function(x) x/sum(x))))
+outputRCT_list_ent_all<-lapply(outputRCT_list_ent_all, function(output) apply(output,1,function(x) sum(x*log2(1/x))))
+max_ent_all<-log2(length(epochs))
+
+
+rotate<-function(x) t(apply(x, 2, rev))
 
 #Functions--------------------------------------------------------------------------------------------------------------
 #1 plot_cell(cell,exp)  Plots the calcium trajectory of one cell
@@ -178,11 +189,16 @@ plot_dotselec<-function(){
 	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = dot selective","-1 = bar selective"),xpd=TRUE,cex=1.5)
 
 	dev.new(width=10,height=6);
-	par(mfrow=c(1,2), oma=c(0,0,4,0));
+	par(mfrow=c(1,2), oma=c(3,0,4,0));
     param_list[[i+1]]<-hist(dotS270,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotS90,dotS270)),max(c(dotS90,dotS270)),l=30),main="270ᵒ direction",xlab="",col=martincolorscale[1]);
     param_list[[i+2]]<-hist(dotS90,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotS90,dotS270)),max(c(dotS90,dotS270)),l=30),main="90ᵒ direction",xlab="",col=martincolorscale[2]);
 	param_list[[i+3]]<-hist(dotS,plot=F)
 	mtext("dot to bar selectivity", outer=T,cex=1.5)
+	
+	par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
+	plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
+	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = dot selective","-1 = bar selective"),xpd=TRUE,cex=1)
+
 	selec_list[[1]]<-sapply(param_list, function(x) sum(x$counts[x$mid>=0.5]))
 	selec_list[[2]]<-sapply(param_list, function(x) sum(x$counts[x$mid<=-0.5]))
 	return(selec_list)
@@ -191,7 +207,7 @@ plot_dotselec<-function(){
 
 #3 Plots the histogram of DS for all sizes and bars/dots
 plot_DS<-function(){
-	dev.new(width=20,height=10)
+#	dev.new(width=20,height=10)
 	par(oma=c(6,0,4,0));
 	lmat<-matrix(1:10,ncol=ncol(barDS_SF),byrow=F)
 	layout(lmat)
@@ -211,11 +227,17 @@ plot_DS<-function(){
 	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = 90ᵒ selective","-1 = 270ᵒ selective"),xpd=TRUE,cex=1.5)
 
 	dev.new(width=10,height=6);
-	par(mfrow=c(1,2), oma=c(0,0,4,0));
+	par(mfrow=c(1,2), oma=c(3,0,4,0));
 	param_list[[11]]<-hist(dotDS,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotDS,barDS)),max(c(dotDS,barDS)),l=30),main="dot",xlab="",col=martincolorscale[1]);
     param_list[[12]]<-hist(barDS,xlim=c(-1,1),ylim=c(0,150),breaks=seq(min(c(dotDS,barDS)),max(c(dotDS,barDS)),l=30),main="bar",xlab="",col=martincolorscale[2]);
 	param_list[[13]]<-hist(DS,plot=F)
 	mtext("direction selectivity", outer=T,cex=1.5)
+
+	par(fig=c(0,1,0,1),oma=c(0,0,0,0),mar=c(0,0,0,0),new=TRUE)
+	plot(0,0,type="n",bty="n",xaxt="n",yaxt="n")
+	legend("bottomright",inset=c(0.01,0.01),legend=c("1 = 90ᵒ selective","-1 = 270ᵒ selective"),xpd=TRUE,cex=1)
+
+
 	selec_list[[1]]<-sapply(param_list, function(x) sum(x$counts[x$mid>=0.5]))
 	selec_list[[2]]<-sapply(param_list, function(x) sum(x$counts[x$mid<=-0.5]))
 	return(selec_list)
@@ -330,5 +352,18 @@ plot_entropy<-function(){
 
 }
 
+#9 plot the entropy of cells' response to all stimuli
+plot_entropy_all<-function(){
+	cols<-martincolorscale[1:length(prefix_list)]
+	increment<-1/length(prefix_list)
+	wex<-increment-(increment*0.1)
+	loc<-(-0.45)
+	boxplot(outputRCT_list_ent_all,las=2,cex.axis=0.8,boxfill=cols,ylim=c(0,max_ent_all),ylab="entropy")
+	abline(h=max_ent_all,lty=3)
+}
 
-
+plot_DS_correlation<-function(size1,size2){
+	colPal<-colorRampPalette(c("white","black"))
+	heat_map<-colPal(50)[cut(corvec_minmax,breaks=50,labels=F)]
+	plot(dotDS_SF[,size1],dotDS_SF[,size2],col=heat_map,pch=19)
+}

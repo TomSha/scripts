@@ -53,7 +53,7 @@ $mkout_raw $resultsfolder/$prefix.bin $epochfile $tshift $freq $resultsfolder/$p
 # COLLAPSE WD EPOCHS
 
 #echo Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 	#CHANGE HERE	
-Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 		#CHANGE HERE
+#Rscript remove_epochs_ss_dots.R $prefix $resultsfolder $timelogfolder 		#CHANGE HERE
 collapsedepochfile=$resultsfolder/$prefix"_epochsC.dat"
 nEP=`cat $collapsedepochfile | wc -l`
 
@@ -64,7 +64,7 @@ nEP=`cat $collapsedepochfile | wc -l`
 #thresh was 0.625 for dots and 0.44 for simple
 
 #echo Rscript bcl4_script.R $prefix $resultsfolder 					
-Rscript bcl4_script.R $prefix $resultsfolder 						
+#Rscript bcl4_script.R $prefix $resultsfolder 						
 
 #----------------------
 nEP=5			#CHANGED HERE

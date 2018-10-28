@@ -5,11 +5,11 @@
 require(plotrix)
 require(mmand)
 
-prefix="180608_PVN_barrage4_F1_1"
-folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox_sizes/",sep="")#CHANGES 17/08/2018
+prefix="180606_PVN_barrage4_F1_1"
+folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/results_toolbox_optimal/",sep="")#CHANGES 17/08/2018
 #epfilenoC="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/170623_PVN_barrage_7dpf_F2_1_time.log";
 #epfile=paste(folder,prefix,"_epochsC.dat",sep="");
-epfile=paste(folder,prefix,"_epochs_dot_270.dat",sep="");
+epfile=paste(folder,prefix,"_epochsC.dat",sep="");
 nifti=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/",prefix,"/im/im_slice_1/rim_slice_1.nii",sep="");
 
 #how many nearest neighbours need to be in same cluster for cell not to be removed as a halo
