@@ -1,5 +1,6 @@
-martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
-#martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+#martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+
+martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 
 prefix_list=read.table("prefix_list_bars_dots")$V1
 
@@ -49,7 +50,6 @@ ord<-paste(gsub("\\D","",epochs),gsub("[^BD]","",epochs))
 ord<-order(gsub("5","05",ord))
 epochs<-epochs[ord]
 outputRCT_list[[i]][,2:ncol(outputRCT_list[[i]])]<-outputRCT_list[[i]][,2:ncol(outputRCT_list[[i]])][,ord]
-
 }
 
 outputRCT<-do.call(rbind,outputRCT_list)
@@ -60,6 +60,10 @@ split<-(nEP-1)/2
 
 #calculate selectivity for dots compared to bars
 #dot-bar/total
+dotS_SF_list<-lapply(outputRCT_list,function(output) (output[,2:ncol(output)][,1:split*2]-output[,2:ncol(output)][,1:split*2-1])/(output[,2:ncol(output)][,1:split*2]+output[,2:ncol(output)][,1:split*2-1]))
+dotS_list<-lapply(dotS_SF_list, function(dotS) rowMeans(dotS))
+
+
 dotS_SF<-(outputRCT[,2:ncol(outputRCT)][,1:split*2]-outputRCT[,2:ncol(outputRCT)][,1:split*2-1])/(outputRCT[,2:ncol(outputRCT)][,1:split*2]+outputRCT[,2:ncol(outputRCT)][,1:split*2-1])
 dotS90<-rowSums(dotS_SF[,1:5])/5
 dotS270<-rowSums(dotS_SF[,6:10])/5
@@ -171,7 +175,7 @@ plot_cell <- function(id,exp,xmax=100000){
 #2 Plots the histogram of the selectivity of dots vs bars for all sizes and directions
 plot_dotselec<-function(){
 	dev.new(width=20,height=10)
-    par(mfrow=c(2,5));par(oma=c(6,0,4,0));
+    par(mfrow=c(2,5));par(mar=c(2,2,1.7,1));#par(oma=c(6,0,4,0));
 	param_list<-vector("list",length=ncol(dotselec))
 	selec_list<-vector("list",length=2)
     for (i in 1:5){
@@ -367,3 +371,106 @@ plot_DS_correlation<-function(size1,size2){
 	heat_map<-colPal(50)[cut(corvec_minmax,breaks=50,labels=F)]
 	plot(dotDS_SF[,size1],dotDS_SF[,size2],col=heat_map,pch=19)
 }
+
+
+
+plot_image<-function(cell,experiment,P=19,S=1.5,c=6){
+	y=cenfile_list[[experiment]]$V1+1
+	x=cenfile_list[[experiment]]$V2+1
+	nx=dimvec_list[[experiment]][1]
+	ny=dimvec_list[[experiment]][2]
+	image(1:nx,1:ny,matrix(avtab_list[[experiment]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE);
+	l<-outputRCT_list[[experiment]][,1]%in%(cell)
+	points(x[l],y[l],col=martincolorscale[c],pch=P,cex=S)
+			
+}
+
+plot_response_image<-function(P=19,S=1.5){
+	lmat<-matrix(1:length(prefix_list),ncol=length(prefix_list)/2)
+	layout(lmat)
+
+	for(i in 1:length(prefix_list)){
+		nx<-nx_list[[i]]
+		ny<-ny_list[[i]]
+		avtab<-avtab_list[[i]]
+		cenfile<-cenfile_list[[i]]
+        colPal<-colorRampPalette(colors=c("blue","white","red"))
+        cols<-colPal(50)[cut(dotS_list[[i]],breaks=50,labels=F)];
+        image(1:nx,1:ny,matrix(avtab$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE)
+        points(x=cenfile[,2],y=cenfile[,1],col=cols,pch=P,cex=S)
+     }
+}
+
+######SINS######
+get_SIN<-function(experiment,slope=1,intercept=(-110),plot=F,c=6){
+	y=cenfile_list[[experiment]]$V1+1
+	x=cenfile_list[[experiment]]$V2+1
+	id<-(cell_id(y<(x*slope)+intercept,experiment))
+	if(plot){
+	plot_image(id,experiment,c=c)	
+#	abline(a=intercept,b=slope,col="white",lty=3)
+	}
+	return(id)
+}
+
+SIN_slope<-vector("list",length(prefix_list))
+
+SIN_slope[[1]]<-c(1,1,-110)
+SIN_slope[[2]]<-c(2,1.2,-100)
+SIN_slope[[3]]<-c(3,1.5,-170)
+SIN_slope[[4]]<-c(4,1.1,-80)
+
+SIN_ID<-lapply(SIN_slope, function(slope) get_SIN(slope[1],slope[2],slope[3]))
+
+SIN_output_list<-mapply(function(ID,output) output[output$V1%in%ID,], SIN_ID,outputRCT_list,SIMPLIFY=F)
+notSIN_output_list<-mapply(function(ID,output) output[!output$V1%in%ID,], SIN_ID,outputRCT_list,SIMPLIFY=F)
+
+SIN_output<-do.call(rbind,SIN_output_list)
+notSIN_output<-do.call(rbind,notSIN_output_list)
+
+dotS_SF_SIN_fish<-lapply(SIN_output_list, function(SIN_output) (SIN_output[,2:ncol(SIN_output)][,1:split*2]-SIN_output[,2:ncol(SIN_output)][,1:split*2-1])/(SIN_output[,2:ncol(SIN_output)][,1:split*2]+SIN_output[,2:ncol(SIN_output)][,1:split*2-1]))
+
+dotS_SF_SIN<-do.call(rbind,dotS_SF_SIN_fish)
+
+dotS90_SIN<-rowSums(dotS_SF_SIN[,1:5])/5
+dotS270_SIN<-rowSums(dotS_SF_SIN[,6:10])/5
+dotS_SIN<-rowSums(dotS_SF_SIN[,1:10])/10
+
+dotS_SF_notSIN<-(notSIN_output[,2:ncol(notSIN_output)][,1:split*2]-notSIN_output[,2:ncol(notSIN_output)][,1:split*2-1])/(notSIN_output[,2:ncol(notSIN_output)][,1:split*2]+notSIN_output[,2:ncol(notSIN_output)][,1:split*2-1])
+dotS90_notSIN<-rowSums(dotS_SF_notSIN[,1:5])/5
+dotS270_notSIN<-rowSums(dotS_SF_notSIN[,6:10])/5
+dotS_notSIN<-rowSums(dotS_SF_notSIN[,1:10])/10
+
+SIN_barDS<-apply(SIN_output[,2:ncol(SIN_output)],1,function(x) (sum(x[grep("BAR_90",epochs)])-sum(x[grep("BAR_270",epochs)]))/sum(x[grep("BAR",epochs)]))
+SIN_dotDS<-apply(SIN_output[,2:ncol(SIN_output)],1,function(x) (sum(x[grep("DOT_90",epochs)])-sum(x[grep("DOT_270",epochs)]))/sum(x[grep("DOT",epochs)]))
+SIN_DS<-apply(SIN_output[,2:ncol(SIN_output)],1,function(x) (sum(x[grep("90",epochs)])-sum(x[grep("270",epochs)]))/sum(x))
+
+SIN_entropy<-mapply(function(ent,output,SIN) ent[output$V1 %in% SIN], outputRCT_list_ent_all,outputRCT_list,SIN_ID,SIMPLIFY=F)
+
+
+plot_SIN<-function(cell,exp,new=F){
+	
+	if(dev.cur()==1|new){
+		dev.new(width=15,height=4);
+	}
+	plot_cell(SIN_ID[[exp]][cell]+1,exp);
+	dev<-dev.cur()
+	
+	if(length(dev.list())<2|new){
+		X11();
+		plot_image(SIN_ID[[exp]][cell],exp);
+		dev.set(dev)
+	}else{
+		if(dev.cur()==2){
+			dev.set(3)
+		}else{
+			dev.set(2)
+		}
+		plot_image(SIN_ID[[exp]][cell],exp);
+		dev.set(dev)		
+}
+}
+
+
+
+

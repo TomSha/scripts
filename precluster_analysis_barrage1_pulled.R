@@ -1,5 +1,5 @@
-martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
-#martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+#martincolorscale=c("#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+martincolorscale=c("#f3fa54ff","green4","royalblue4","black","#1f1c25ff","#176462ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
 
 prefix_list=read.table("prefix_list_rep1")$V1
 
@@ -108,14 +108,14 @@ plot_cell <- function(id,exp,xmax=100000){
     rect(xleft=ep$V1[1:nEP *2 -1],xright=ep$V1[1:nEP *2 ],ybottom=rep(-1000,nEP*2),ytop=rep(xmax,nEP*2),col=rgb(0,1,0,.05))
 }
 
-plot_image<-function(cell,experiment,P=19,S=1.5){
+plot_image<-function(cell,experiment,P=19,S=1.5,c=6){
 	y=cenfile_list[[experiment]]$V1+1
 	x=cenfile_list[[experiment]]$V2+1
 	nx=dimvec_list[[experiment]][1]
 	ny=dimvec_list[[experiment]][2]
 	image(1:nx,1:ny,matrix(avtab_list[[experiment]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE);
 	l<-outputRCT_list[[experiment]][,1]%in%(cell)
-	points(x[l],y[l],col=martincolorscale[1],pch=P,cex=S)
+	points(x[l],y[l],col=martincolorscale[c],pch=P,cex=S)
 			
 }
 
@@ -157,17 +157,33 @@ location_max<-function(){
 	location_max30<-vector("list",length(prefix_list));
 	epochs_W3 <-grep(("WIGGLY3_"), epochs, value = F, invert=F);
 	epochs_W15 <-grep(("WIGGLY15_"), epochs, value = F, invert=F);
-    epochs_W30 <-grep(("WIGGLY30_"), epochs, value = F, invert=F);
+  epochs_W30 <-grep(("WIGGLY30_"), epochs, value = F, invert=F);
+	quad<-c("DL","DR","UL","UR")	
+	max_cells<-vector("list",length(quad))
+
+	lmat=matrix(1:length(prefix_list),ncol=length(prefix_list)/2)
+	layout(lmat); par(mar=c(.5,.5,.5,.5))
 
 	for (i in 1:length(prefix_list)){
-		location_max3[[i]]<-table(factor(epochs[epochs_W3[max.col(outputRCT_list[[i]][,epochs_W3+1])]],levels=epochs[epochs_W3]))
-		location_max15[[i]]<-table(factor(epochs[epochs_W15[max.col(outputRCT_list[[i]][,epochs_W15+1])]],levels=epochs[epochs_W15]))
-		location_max30[[i]]<-table(factor(epochs[epochs_W30[max.col(outputRCT_list[[i]][,epochs_W30+1])]],levels=epochs[epochs_W30]))
+		location_max3[[i]]<-factor(epochs[epochs_W3[max.col(outputRCT_list[[i]][,epochs_W3+1])]],levels=epochs[epochs_W3])
+		location_max15[[i]]<-factor(epochs[epochs_W15[max.col(outputRCT_list[[i]][,epochs_W15+1])]],levels=epochs[epochs_W15])
+		location_max30[[i]]<-factor(epochs[epochs_W30[max.col(outputRCT_list[[i]][,epochs_W30+1])]],levels=epochs[epochs_W30])
+		y=cenfile_list[[i]]$V1+1
+		x=cenfile_list[[i]]$V2+1
+		nx=dimvec_list[[i]][1]
+		ny=dimvec_list[[i]][2]
+		image(1:nx,1:ny,matrix(avtab_list[[i]]$V2,ncol=ny,nrow=nx),ylim=c(ny+0.5,0.5),col=gray.colors(100),xaxt='n',yaxt='n',ann=FALSE);
+
+	for (j in 1:length(quad)){	
+		max_cells[[j]]<-grepl(quad[j],location_max3[[i]])
+		points(x[max_cells[[j]]],y[max_cells[[j]]],col=martincolorscale[j],pch=P,cex=S)
 		}
 
-		location_max3<-t(sapply(location_max3,unlist));
-		location_max15<-t(sapply(location_max15,unlist));
-		location_max30<-t(sapply(location_max30,unlist));
+	}
+
+		location_max3<-t(sapply(location_max3,function(x) unlist((table(x)))));
+		location_max15<-t(sapply(location_max15,function(x) unlist(table(x))));
+		location_max30<-t(sapply(location_max30,function(x) unlist(table(x))));
 		
 		location_max3n<-t(apply(location_max3,1,function(x) x/mean(x)));
 		location_max15n<-t(apply(location_max15,1,function(x) x/mean(x)));
@@ -181,7 +197,7 @@ location_max<-function(){
 		par(mar=c(6,4,4,2))
 		ymin<-min(colMeans(location_max3n)-max3_sd);
 		ymax<-max(colMeans(location_max3n)+max3_sd);
-		barCenters<-barplot(colMeans(location_max3n),axisnames=F, ylim=c(ymin,ymax));
+		barCenters<-barplot(colMeans(location_max3n),axisnames=F, ylim=c(0,3.5),col=martincolorscale[1:4]);
 		y1<-colMeans(location_max3n)-max3_sd;
 		y2<-colMeans(location_max3n)+max3_sd;
 		arrows(barCenters,y1,barCenters,y2,length=0.05,angle=90,code=3);
@@ -190,7 +206,7 @@ location_max<-function(){
 		X11();
 		ymin<-min(colMeans(location_max15n)-max15_sd);
 		ymax<-max(colMeans(location_max15n)+max15_sd);
-		barCenters<-barplot(colMeans(location_max15n), axisnames=F, ylim=c(ymin,ymax));
+		barCenters<-barplot(colMeans(location_max15n), axisnames=F, ylim=c(0,3.5),col=martincolorscale[1:4]);
 		y1<-colMeans(location_max15n)-max15_sd;
 		y2<-colMeans(location_max15n)+max15_sd;
 		arrows(barCenters,y1,barCenters,y2,length=0.05,angle=90,code=3);
@@ -199,7 +215,7 @@ location_max<-function(){
 		X11();
 		ymin<-min(colMeans(location_max30n)-max30_sd);
 		ymax<-max(colMeans(location_max30n)+max30_sd);
-		barCenters<-barplot(colMeans(location_max30n), axisnames=F,ylim=c(ymin,ymax));
+		barCenters<-barplot(colMeans(location_max30n), axisnames=F,ylim=c(0,3.5),col=martincolorscale[1:4]);
 		y1<-colMeans(location_max30n)-max30_sd;
 		y2<-colMeans(location_max30n)+max30_sd;
 		arrows(barCenters,y1,barCenters,y2,length=0.05,angle=90,code=3);
@@ -251,11 +267,52 @@ cell_id<-function(X,experiment){
 	return(outputRCT_list[[experiment]][X,1])
 }
 
-get_SINS<-function(experiment,xgt=180,ylt=200,ygt=70){
+SIN_slope<-vector("list",length(prefix_list))
+
+SIN_slope[[1]]<-c(1,2.1,-300)
+SIN_slope[[2]]<-c(2,2.5,-320)
+SIN_slope[[3]]<-c(3,2.1,-300)
+SIN_slope[[4]]<-c(4,1,-100)
+SIN_slope[[5]]<-c(5,1,-110)
+SIN_slope[[6]]<-c(6,1,-110)
+SIN_slope[[7]]<-c(7,2,-200)
+SIN_slope[[8]]<-c(8,1.3,-200)
+
+get_SIN<-function(experiment,slope=2.5,intercept=(-320),plot=F){
 	y=cenfile_list[[experiment]]$V1+1
 	x=cenfile_list[[experiment]]$V2+1
-	id<-(cell_id(x>xgt & y<ylt & y>ygt,experiment))
-	plot_image(id,experiment)
+	id<-(cell_id(y<(x*slope)+intercept,experiment))
+	if(plot){
+	plot_image(id,experiment)	
+	abline(a=intercept,b=slope,col="white",lty=3)
+	}
 	return(id)
 }
+
+SIN_ID<-lapply(SIN_slope, function(slope) get_SIN(slope[1],slope[2],slope[3]))
+
+SIN_output_list<-mapply(function(ID,ent,output) output[output$V1%in%ID,], SIN_ID,outputRCT_list_ent,outputRCT_list,SIMPLIFY=F)
+notSIN_output_list<-mapply(function(ID,ent,output) output[!output$V1%in%ID,], SIN_ID,outputRCT_list_ent,outputRCT_list,SIMPLIFY=F)
+
+
+SIN_ent_list<-mapply(function(ID,ent,output) ent[output$V1%in%ID], SIN_ID,outputRCT_list_ent,outputRCT_list,SIMPLIFY=F)
+notSIN_ent_list<-mapply(function(ID,ent,output) ent[!output$V1%in%ID], SIN_ID,outputRCT_list_ent,outputRCT_list,SIMPLIFY=F)
+
+
+SIN_dotselec<-(rowMeans(SIN_output_list[[1]][,grep("WIGGLY",epochs)+1])-rowMeans(SIN_output_list[[1]][,which(!(1:length(epochs) %in% grep("WIGGLY",epochs)))+1]))/(rowMeans(SIN_output_list[[1]][,grep("WIGGLY",epochs)+1])+rowMeans(SIN_output_list[[1]][,which(!(1:length(epochs) %in% grep("WIGGLY",epochs)))+1]))
+
+SIN_dotselec<-lapply(SIN_output_list,function(output) (rowMeans(output[,grep("WIGGLY",epochs)+1])-rowMeans(output[,which(!(1:length(epochs) %in% grep("WIGGLY",epochs)))+1]))/(rowMeans(output[,grep("WIGGLY",epochs)+1])+rowMeans(output[,which(!(1:length(epochs) %in% grep("WIGGLY",epochs)))+1])))
+
+notSIN_dotselec<-lapply(notSIN_output_list,function(output) (rowMeans(output[,grep("WIGGLY",epochs)+1])-rowMeans(output[,which(!(1:length(epochs) %in% grep("WIGGLY",epochs)))+1]))/(rowMeans(output[,grep("WIGGLY",epochs)+1])+rowMeans(output[,which(!(1:length(epochs) %in% grep("WIGGLY",epochs)))+1])))
+
+plot_dotselec<-function(){
+	cols<-martincolorscale[1:2]
+	inc<-0.5
+	wex<-inc-(inc*0.1)
+	loc<-(-0.25)
+	boxplot(SIN_dotselec,las=2,cex.axis=0.8,boxfill=rgb(1, 1, 1, alpha=1), border=rgb(1, 1, 1, alpha=1),ylim=c(-1,1))
+	boxplot(SIN_dotselec,add=T,boxwex=wex,at=1:length(prefix_list)+loc,boxfill=martincolorscale[1],xaxt="n",yaxt="n")
+	loc<-loc+inc
+	boxplot(notSIN_dotselec,add=T,boxwex=wex,at=1:length(prefix_list)+loc,boxfill=martincolorscale[2],xaxt="n",yaxt="n")
+	}
 

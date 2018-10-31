@@ -1,5 +1,5 @@
-martincolorscale=c("#6ef914ff","#060cf1ff","#f106e3ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
-#martincolorscale=c("green4","royalblue4","deeppink4","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff","#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff");
+#martincolorscale=c("#6ef914ff","#060cf1ff","#f106e3ff","#1f1c25ff","#176462ff","#f3fa54ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff");
+martincolorscale=c("green4","royalblue4","#f3fa54ff","#1f1c25ff","deeppink4","#176462ff","#54f0faff","#fa6d54ff","#da32daff","#fbf2f9ff","#fa54a6ff","#54fac4ff","#602646ff","#a96350ff","#d1720cff","#e4eac1ff","#deee82ff","#187695ff","#203655ff","#989865ff","#f2e7f7ff","#6ef914ff","#f106e3ff","#060cf1ff","#1f1c25ff");
 #args <- commandArgs(trailingOnly = TRUE)
 
 #prefix<- args[1]
@@ -8,13 +8,13 @@ martincolorscale=c("#6ef914ff","#060cf1ff","#f106e3ff","#1f1c25ff","#176462ff","
 
 require(plotrix)
 require(mmand)
-prefix_list<-read.table("/home/meyer-lab/ToolBox_v3.6/scripts/prefix_list_rep1")$V1	                					#CHANGE HERE
-results_toolbox<-"results_toolbox_DS"																					#ALSO CHANGE HERE
-folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_DS",sep="") 	#ALSO CHANGE HERE	
+prefix_list<-read.table("/home/meyer-lab/ToolBox_v3.6/scripts/prefix_list_bars_dots")$V1	                					#CHANGE HERE
+results_toolbox<-"results_toolbox_sizes"																					#ALSO CHANGE HERE
+folder=paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/pulled_results_bars_dots",sep="") 	#ALSO CHANGE HERE	
 niftifolder="/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/H2Bslow/"
 epfile=paste(folder,"/pulled_epochsC.dat",sep="");														
 #how many nearest neighbours need to be in same cluster for cell not to be removed as a halo
-KNN=4
+KNN=3
 EP<-read.table(epfile);
 nEP=nrow(EP)
 EPlist<-vector(mode="character", length=nEP);
@@ -48,7 +48,7 @@ for(i in 1:length(prefix_list)){
 	inc_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_inc.dat",sep=""));
 	noisethresh_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_noise_thresh.dat",sep=""))
 #	center_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_cell_centers.dat",sep=""))[noisethresh_list[[i]]$V1,][dencl_list[[i]]$V1+1,][inc_list[[i]][,1],];
-	center_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_cell_centers.dat",sep=""))[noisethresh_list[[i]]$V1,][inc_list[[i]][,1],];
+	center_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_cell_centers.dat",sep=""))#[noisethresh_list[[i]]$V1,][inc_list[[i]][,1],];
 	center_all_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_cell_centers.dat",sep=""))
 	dencl_list[[i]]<-dencl_list[[i]][inc_list[[i]][,1],];
 	dimvec_list[[i]]<-system(paste("nifti_tool -disp_hdr -infiles",nifti,"| grep \" dim \" | awk '{print $5, $6,$7}'"),intern=T)
@@ -58,10 +58,10 @@ for(i in 1:length(prefix_list)){
 	ep_list[[i]]<-read.table(paste("/media/meyer-lab/Elements/Work/Stimulus_Barrage/barrage_v2/ExpLogs_TomSh/",prefix,"_time.log",sep=""))
 	ep_list[[i]]$V1<-(ep_list[[i]]$V1+90)*20
 	epochsC_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_epochsC.dat",sep=""))$V1
-	output_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_outputCTM.dat",sep=""))
+#	output_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_outputCTM.dat",sep=""))
 	ord<-paste(gsub("\\D","",epochsC_list[[i]]),gsub("[^BD]","",epochsC_list[[i]]))#new
 	ord<-order(gsub("5","05",ord))#new NB is overwritten later on
-	output_list[[i]][,2:ncol(output_list[[i]])]<-output_list[[i]][,2:ncol(output_list[[i]])][,ord]
+#	output_list[[i]][,2:ncol(output_list[[i]])]<-output_list[[i]][,2:ncol(output_list[[i]])][,ord]
 	output_raw_list[[i]]<-read.table(paste(niftifolder,"/",prefix,"/im/im_slice_1/",results_toolbox,"/",prefix,"_output_rawCT.dat",sep=""))
 	ep<-ep_list[[i]]$V2[2:(nrow(ep_list[[i]])/2)*2]
 	ep_ord<-paste(gsub("\\D","",ep),gsub("[^BD]","",ep))#new
@@ -157,14 +157,14 @@ plot_traj<-function(X,min=0,max=1,NS=1,AS=1,CC=martincolorscale[X+21]){
 	pos<-barplot(centers[X,ord2],names.arg=EPlist[ord2],horiz=T,xlim=c(0,centers[X,ord2[nEP]]+centers_sd[X,ord2[nEP]]),cex.axis=AS,cex.names=NS,col=CC);
 #	pos<-barplot(centers[X,ord2],names.arg=c("POSTERIOR","ANTERIOR"),horiz=T,xlim=c(-1,centers[X,ord2[nEP]]+centers_sd[X,ord2[nEP]]),cex.axis=AS,cex.names=NS,col=CC);
 	arrows(y0=pos,y1=pos,x0=centers[X,ord2]-centers_sd[X,ord2],x1=centers[X,ord2]+centers_sd[X,ord2],code=3,length=0,col="black");
-
 }
 
 plot_box<-function(X){
 	par(mar=c(3,7,2,2))
 #	ord2<-order(centers[X,]);
 	fish<-sum(!table(data$V2[cl==X & threshold])==0)
-	boxplot(data[cl==X & threshold,4+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,"in",fish,"/",length(prefix_list),"fish"),col=c(rep(martincolorscale[1],5),rep(martincolorscale[2],5)))
+#	boxplot(data[cl==X & threshold,4+ord],names=EPlist[ord],las=2,horizontal=T,main=paste("cluster",X,"in",fish,"/",length(prefix_list),"fish"),col=c(rep(martincolorscale[1],5),rep(martincolorscale[2],5)))
+	boxplot(data[cl==X & threshold,4+ord],names=rep("",2),las=2,horizontal=T,main="",col=c(rep(martincolorscale[4],5),rep(martincolorscale[2],5)))
 #	abline(v=0, lty=2,col="blue")
 }
 
@@ -224,7 +224,7 @@ plot_corvec<-function(P=19,S=1.5,DR=50){
 	}
 }
 
-plot_image<-function(cluster,experiment,P=19,S=1.5,thresh=T,cell="ALL"){
+plot_image<-function(cluster,experiment,P=19,S=1.5,thresh=T,cell="ALL",c=1){
 #dencl_list[[k]]$V6 : C1 ID from fish k
 #data$V4			: C1 ID
 #data$V2			: prefix
@@ -241,7 +241,7 @@ plot_image<-function(cluster,experiment,P=19,S=1.5,thresh=T,cell="ALL"){
 		selec=dencl_list[[experiment]]$V6 %in% (data$V4[data$V2==prefix_list[experiment] & cl==cluster[i]]-1)
 		}
 		if(cell=="ALL"){
-		points(x[ selec  ],y[selec ],col=martincolorscale[i],pch=P,cex=S)
+		points(x[ selec  ],y[selec ],col=martincolorscale[c],pch=P,cex=S)
 		}else{
 		points(x[ selec  ][cell],y[selec ][cell],col=martincolorscale[i],pch=P,cex=S)
 		}	
@@ -352,6 +352,21 @@ plot_dotS_cluster<-function(cluster){
 	legend("topleft",inset=c(0.05,0.01),legend=c("1 = dot selective","-1 = bar selective"),xpd=TRUE,cex=1)
 
 
+}
+
+plot_dotS_cluster_box<-function(cluster){
+  index<-mapply(function(output,cells) output[,1] %in% cells, output_raw_list,cluster_cells_ID(cluster))
+  index<-unlist(index)
+  #	dotS<-unlist(dotS_list)
+  dotS_cluster<-do.call(rbind,dotS_list)[index,]
+  dotS_cluster<-rowSums(dotS_cluster)/10
+  dotS<-do.call(rbind,dotS_list)
+  dotS<-rowSums(dotS)/10
+  boxplot(dotS_cluster,ylim=c(-1,1),main="",col=martincolorscale[1],xlab="",at=-0.5,wex=0.5)
+  boxplot(dotS,add=T,at=0.5,wex=0.5)
+  #legend("topleft",inset=c(0.05,0.01),legend=c("1 = dot selective","-1 = bar selective"),xpd=TRUE,cex=1)
+  
+  
 }
 
 plot_dotDS_cluster<-function(cluster){
